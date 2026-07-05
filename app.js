@@ -472,7 +472,6 @@ continueBtn.addEventListener('click', () => {
 
 rollBtn.addEventListener('click', () => {
   currentPlayer = randomPlayer();
-  rerollsLeft = MAX_REROLLS;
   idleState.classList.add('hidden');
   playerCard.classList.remove('hidden');
   renderPlayerCard();

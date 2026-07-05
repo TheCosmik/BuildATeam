@@ -104,6 +104,23 @@ const resultMsg = document.getElementById('result-msg');
 const continueBtn = document.getElementById('continue-btn');
 const retryBtn = document.getElementById('retry-btn');
 
+const playoffState = document.getElementById('playoff-state');
+const playoffRoundLabel = document.getElementById('playoff-round-label');
+const gameField = document.getElementById('game-field');
+const ball = document.getElementById('ball');
+const playFlash = document.getElementById('play-flash');
+const playoffYourLogo = document.getElementById('playoff-your-logo');
+const playoffOppLogo = document.getElementById('playoff-opp-logo');
+const playoffYourScore = document.getElementById('playoff-your-score');
+const playoffOppScore = document.getElementById('playoff-opp-score');
+const playoffOppName = document.getElementById('playoff-opp-name');
+const playoffResult = document.getElementById('playoff-result');
+const playoffResultMsg = document.getElementById('playoff-result-msg');
+const playoffRetryBtn = document.getElementById('playoff-retry-btn');
+
+let currentTeam = null;
+let currentSeed = null;
+
 function teamLogoUrl(abbr) {
   const slug = abbr === 'WAS' ? 'wsh' : abbr.toLowerCase();
   return `https://a.espncdn.com/i/teamlogos/nfl/500/${slug}.png`;
@@ -140,12 +157,58 @@ function generateScore(win) {
 
 function determinePlayoffs(wins) {
   if (wins >= 14) return { qualified: true, seed: 1 };
-  if (wins >= 12) return { qualified: true, seed: 2 };
-  if (wins >= 11) return { qualified: true, seed: 3 };
+  if (wins === 13) return { qualified: true, seed: 2 };
+  if (wins === 12) return { qualified: true, seed: 3 };
+  if (wins === 11) return { qualified: true, seed: 4 };
   if (wins === 10) return { qualified: Math.random() < 0.85, seed: 5 };
   if (wins === 9) return { qualified: Math.random() < 0.55, seed: 6 };
   if (wins === 8) return { qualified: Math.random() < 0.2, seed: 7 };
   return { qualified: false, seed: null };
+}
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function popEl(el) {
+  el.classList.remove('pop');
+  void el.offsetWidth;
+  el.classList.add('pop');
+}
+
+function pickOpponent(conf, excludeAbbrs, minRating) {
+  let pool = TEAMS.filter((t) => t.conf === conf && !excludeAbbrs.includes(t.abbr) && t.rating >= minRating);
+  if (pool.length === 0) {
+    pool = TEAMS.filter((t) => t.conf === conf && !excludeAbbrs.includes(t.abbr));
+  }
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function buildGameDrives(win) {
+  const randPlays = (n) => Array.from({ length: n }, () => (Math.random() < 0.6 ? 7 : 3));
+  const yourPlays = randPlays(2 + Math.floor(Math.random() * 3));
+  const oppPlays = randPlays(2 + Math.floor(Math.random() * 3));
+  let yourScore = yourPlays.reduce((a, b) => a + b, 0);
+  let oppScore = oppPlays.reduce((a, b) => a + b, 0);
+
+  if (win && yourScore <= oppScore) {
+    yourPlays.push(7);
+    yourScore += 7;
+  }
+  if (!win && oppScore <= yourScore) {
+    oppPlays.push(7);
+    oppScore += 7;
+  }
+
+  const drives = [];
+  yourPlays.forEach((pts) => drives.push({ side: 'you', pts }));
+  oppPlays.forEach((pts) => drives.push({ side: 'opp', pts }));
+  for (let i = drives.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [drives[i], drives[j]] = [drives[j], drives[i]];
+  }
+
+  return { drives, yourScore, oppScore };
 }
 
 function resetGame() {
@@ -160,10 +223,15 @@ function resetGame() {
   teamCard.classList.add('hidden');
   seasonSim.classList.add('hidden');
   seasonResult.classList.add('hidden');
+  playoffState.classList.add('hidden');
+  playoffResult.classList.add('hidden');
   teamBtn.classList.remove('hidden');
   continueBtn.classList.add('hidden');
   retryBtn.classList.add('hidden');
+  playoffRetryBtn.classList.add('hidden');
   weekTracker.innerHTML = '';
+  currentTeam = null;
+  currentSeed = null;
 
   idleState.classList.remove('hidden');
 }
@@ -280,6 +348,8 @@ function showSeasonResult(team, wins, losses) {
     resultMsg.textContent = `${team.name} clinched the playoffs as the #${seed} seed!`;
     continueBtn.classList.remove('hidden');
     retryBtn.classList.add('hidden');
+    currentTeam = team;
+    currentSeed = seed;
   } else {
     resultMsg.textContent = `${team.name} missed the playoffs.`;
     continueBtn.classList.add('hidden');
@@ -290,6 +360,109 @@ function showSeasonResult(team, wins, losses) {
 }
 
 retryBtn.addEventListener('click', resetGame);
+playoffRetryBtn.addEventListener('click', resetGame);
+
+async function animateDrive(drive, refs) {
+  const target = drive.side === 'you' ? 90 : 10;
+  ball.style.left = target + '%';
+  await wait(1100);
+
+  if (drive.side === 'you') {
+    refs.you += drive.pts;
+    playoffYourScore.textContent = refs.you;
+    popEl(playoffYourScore);
+  } else {
+    refs.opp += drive.pts;
+    playoffOppScore.textContent = refs.opp;
+    popEl(playoffOppScore);
+  }
+
+  playFlash.textContent = drive.pts === 7 ? 'TOUCHDOWN!' : 'FIELD GOAL';
+  playFlash.classList.add('show');
+  await wait(500);
+  playFlash.classList.remove('show');
+
+  ball.style.transition = 'none';
+  ball.style.left = '50%';
+  void ball.offsetWidth;
+  ball.style.transition = '';
+  await wait(400);
+}
+
+async function runPlayoffRound(roundIdx, ctx) {
+  const { rounds, team, teamOverall, usedOpponents, conf } = ctx;
+  const roundName = rounds[roundIdx];
+  const isSuperBowl = roundName === 'Super Bowl';
+  const minRating = isSuperBowl ? 78 : 60 + roundIdx * 6;
+
+  const opponent = isSuperBowl
+    ? pickOpponent(conf === 'AFC' ? 'NFC' : 'AFC', [], minRating)
+    : pickOpponent(conf, [team.abbr, ...usedOpponents], minRating);
+  usedOpponents.push(opponent.abbr);
+
+  playoffResult.classList.add('hidden');
+  playoffState.classList.remove('hidden');
+  playoffRoundLabel.textContent = roundName.toUpperCase();
+  playoffYourLogo.src = teamLogoUrl(team.abbr);
+  playoffOppLogo.src = teamLogoUrl(opponent.abbr);
+  playoffOppName.textContent = `vs ${opponent.name}`;
+  playoffYourScore.textContent = '0';
+  playoffOppScore.textContent = '0';
+  gameField.style.setProperty('--opp-color', opponent.color);
+  ball.style.transition = 'none';
+  ball.style.left = '50%';
+  void ball.offsetWidth;
+  ball.style.transition = '';
+
+  const winProb = Math.min(0.85, Math.max(0.15, 0.5 + (teamOverall - opponent.rating) / 140));
+  const win = Math.random() < winProb;
+  const { drives, yourScore, oppScore } = buildGameDrives(win);
+
+  const refs = { you: 0, opp: 0 };
+  for (const drive of drives) {
+    await animateDrive(drive, refs);
+  }
+
+  await wait(400);
+
+  if (win) {
+    if (roundIdx + 1 < rounds.length) {
+      playoffRoundLabel.textContent = `${roundName} — WIN ${yourScore}-${oppScore}`;
+      await wait(1500);
+      runPlayoffRound(roundIdx + 1, ctx);
+    } else {
+      showPlayoffFinal(true, team, opponent, yourScore, oppScore);
+    }
+  } else {
+    showPlayoffFinal(false, team, opponent, yourScore, oppScore, roundName);
+  }
+}
+
+function showPlayoffFinal(champion, team, opponent, yourScore, oppScore, lostRound) {
+  playoffState.classList.add('hidden');
+  playoffResult.classList.remove('hidden');
+
+  if (champion) {
+    playoffResultMsg.textContent = `\u{1F3C6} ${team.name} are Super Bowl Champions! (${yourScore}-${oppScore} in the Super Bowl)`;
+  } else {
+    playoffResultMsg.textContent = `${team.name} were eliminated in the ${lostRound} (lost ${yourScore}-${oppScore} to ${opponent.name}).`;
+  }
+
+  playoffRetryBtn.classList.remove('hidden');
+}
+
+continueBtn.addEventListener('click', () => {
+  seasonResult.classList.add('hidden');
+
+  const team = currentTeam;
+  const seed = currentSeed;
+  const teamOverall = (qbOverall() + team.rating) / 2;
+  const rounds = seed === 1
+    ? ['Divisional Round', 'Conference Championship', 'Super Bowl']
+    : ['Wild Card Round', 'Divisional Round', 'Conference Championship', 'Super Bowl'];
+
+  runPlayoffRound(0, { rounds, team, teamOverall, usedOpponents: [], conf: team.conf });
+});
 
 rollBtn.addEventListener('click', () => {
   currentPlayer = randomPlayer();

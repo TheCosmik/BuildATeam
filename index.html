@@ -71,8 +71,38 @@
         <div id="season-result" class="season-result hidden">
           <p id="result-record" class="result-record"></p>
           <p id="result-msg" class="result-msg"></p>
-          <button id="continue-btn" class="btn primary hidden" disabled>Continue to Playoffs (coming soon)</button>
+          <button id="continue-btn" class="btn primary hidden">Continue to Playoffs</button>
           <button id="retry-btn" class="btn secondary hidden">Try Again</button>
+        </div>
+
+        <div id="playoff-state" class="playoff-state hidden">
+          <p id="playoff-round-label" class="playoff-round-label"></p>
+
+          <div id="game-field" class="game-field">
+            <div class="endzone endzone-you"></div>
+            <div class="field-lines"></div>
+            <div class="endzone endzone-opp"></div>
+            <div id="ball" class="ball">&#127944;</div>
+            <div id="play-flash" class="play-flash"></div>
+          </div>
+
+          <div class="playoff-score">
+            <div class="playoff-score-side">
+              <img id="playoff-your-logo" class="playoff-logo" src="" alt="">
+              <span id="playoff-your-score" class="playoff-score-value">0</span>
+            </div>
+            <span class="score-divider">&ndash;</span>
+            <div class="playoff-score-side">
+              <span id="playoff-opp-score" class="playoff-score-value">0</span>
+              <img id="playoff-opp-logo" class="playoff-logo" src="" alt="">
+            </div>
+          </div>
+          <p id="playoff-opp-name" class="playoff-opp-name"></p>
+        </div>
+
+        <div id="playoff-result" class="playoff-result hidden">
+          <p id="playoff-result-msg" class="playoff-result-msg"></p>
+          <button id="playoff-retry-btn" class="btn secondary hidden">Try Again</button>
         </div>
       </div>
     </section>

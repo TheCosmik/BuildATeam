@@ -1,0 +1,244 @@
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background: #0b1a0f;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: #eef7ee;
+}
+
+.field-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.035) 0px,
+      rgba(255, 255, 255, 0.035) 2px,
+      transparent 2px,
+      transparent 90px
+    ),
+    radial-gradient(ellipse at center, #163420 0%, #0b1a0f 70%);
+}
+
+.wrap {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 56px 20px 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 36px;
+}
+
+.title {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.title span {
+  color: #6be26b;
+}
+
+.stat-board {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.stat-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(107, 226, 107, 0.2);
+  border-radius: 10px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.stat-slot.filled {
+  border-color: rgba(107, 226, 107, 0.55);
+  background: rgba(107, 226, 107, 0.08);
+}
+
+.stat-slot-label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(238, 247, 238, 0.6);
+}
+
+.stat-slot-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: rgba(238, 247, 238, 0.35);
+}
+
+.stat-slot.filled .stat-slot-value {
+  color: #6be26b;
+}
+
+.roll-area {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.btn {
+  padding: 12px 26px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease, opacity 0.2s ease;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn.primary {
+  background: #6be26b;
+  color: #0b1a0f;
+}
+
+.btn.primary:hover:not(:disabled) {
+  background: #82ea82;
+}
+
+.btn.primary:disabled {
+  background: rgba(107, 226, 107, 0.25);
+  color: rgba(11, 26, 15, 0.6);
+  cursor: not-allowed;
+}
+
+.btn.secondary {
+  background: rgba(255, 255, 255, 0.06);
+  color: #eef7ee;
+  border-color: rgba(238, 247, 238, 0.25);
+}
+
+.btn.secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.btn.secondary:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.player-card {
+  width: 100%;
+  padding: 26px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(107, 226, 107, 0.3);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.player-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.player-name {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.player-team {
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  color: rgba(238, 247, 238, 0.55);
+}
+
+.player-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(238, 247, 238, 0.12);
+  border-radius: 8px;
+}
+
+.stat-row-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-row-label {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(238, 247, 238, 0.55);
+}
+
+.stat-row-value {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.stat-row button {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid rgba(107, 226, 107, 0.45);
+  background: rgba(107, 226, 107, 0.12);
+  color: #6be26b;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.stat-row button:hover {
+  background: rgba(107, 226, 107, 0.25);
+}
+
+.stat-row.taken {
+  opacity: 0.35;
+}
+
+.stat-row.taken button {
+  display: none;
+}
+
+.player-card-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.complete-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.complete-msg {
+  margin: 0;
+  font-size: 16px;
+  color: rgba(238, 247, 238, 0.8);
+}

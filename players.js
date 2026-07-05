@@ -1,0 +1,27 @@
+// Ratings are flavor stats (1-99, Madden-style), not official figures.
+const QB_POOL = [
+  { name: 'Patrick Mahomes',    team: 'KC',  stats: { strength: 78, arm: 96, speed: 82, build: 80, accuracy: 93, awareness: 97 } },
+  { name: 'Josh Allen',         team: 'BUF', stats: { strength: 92, arm: 95, speed: 88, build: 90, accuracy: 85, awareness: 90 } },
+  { name: 'Joe Burrow',         team: 'CIN', stats: { strength: 74, arm: 90, speed: 70, build: 75, accuracy: 95, awareness: 93 } },
+  { name: 'Justin Herbert',     team: 'LAC', stats: { strength: 84, arm: 97, speed: 76, build: 88, accuracy: 89, awareness: 87 } },
+  { name: 'Jalen Hurts',        team: 'PHI', stats: { strength: 88, arm: 84, speed: 87, build: 89, accuracy: 86, awareness: 88 } },
+  { name: 'Lamar Jackson',      team: 'BAL', stats: { strength: 76, arm: 85, speed: 99, build: 78, accuracy: 87, awareness: 91 } },
+  { name: 'Dak Prescott',       team: 'DAL', stats: { strength: 82, arm: 87, speed: 75, build: 84, accuracy: 88, awareness: 86 } },
+  { name: 'Trevor Lawrence',    team: 'JAX', stats: { strength: 79, arm: 92, speed: 73, build: 83, accuracy: 84, awareness: 80 } },
+  { name: 'C.J. Stroud',        team: 'HOU', stats: { strength: 75, arm: 91, speed: 68, build: 80, accuracy: 90, awareness: 85 } },
+  { name: 'Brock Purdy',        team: 'SF',  stats: { strength: 65, arm: 78, speed: 66, build: 65, accuracy: 92, awareness: 89 } },
+  { name: 'Jordan Love',        team: 'GB',  stats: { strength: 77, arm: 93, speed: 72, build: 81, accuracy: 83, awareness: 82 } },
+  { name: 'Caleb Williams',     team: 'CHI', stats: { strength: 73, arm: 89, speed: 79, build: 76, accuracy: 85, awareness: 78 } },
+  { name: 'Anthony Richardson', team: 'IND', stats: { strength: 90, arm: 94, speed: 93, build: 91, accuracy: 72, awareness: 70 } },
+  { name: 'Kyler Murray',       team: 'ARI', stats: { strength: 62, arm: 86, speed: 91, build: 60, accuracy: 84, awareness: 83 } },
+  { name: 'Matthew Stafford',   team: 'LAR', stats: { strength: 80, arm: 93, speed: 60, build: 82, accuracy: 87, awareness: 92 } },
+  { name: 'Aaron Rodgers',      team: 'PIT', stats: { strength: 70, arm: 90, speed: 58, build: 76, accuracy: 91, awareness: 96 } },
+  { name: 'Baker Mayfield',     team: 'TB',  stats: { strength: 75, arm: 88, speed: 65, build: 74, accuracy: 86, awareness: 84 } },
+  { name: 'Tua Tagovailoa',     team: 'MIA', stats: { strength: 63, arm: 82, speed: 64, build: 62, accuracy: 90, awareness: 85 } },
+  { name: 'Geno Smith',         team: 'LV',  stats: { strength: 72, arm: 84, speed: 67, build: 75, accuracy: 85, awareness: 84 } },
+  { name: 'Derek Carr',         team: 'NO',  stats: { strength: 71, arm: 86, speed: 55, build: 74, accuracy: 86, awareness: 87 } },
+  { name: 'Kirk Cousins',       team: 'ATL', stats: { strength: 69, arm: 85, speed: 52, build: 73, accuracy: 87, awareness: 88 } },
+  { name: 'Deshaun Watson',     team: 'CLE', stats: { strength: 78, arm: 88, speed: 80, build: 80, accuracy: 82, awareness: 79 } },
+  { name: 'Russell Wilson',     team: 'NYG', stats: { strength: 74, arm: 87, speed: 78, build: 76, accuracy: 84, awareness: 86 } },
+  { name: 'Bryce Young',        team: 'CAR', stats: { strength: 58, arm: 80, speed: 71, build: 55, accuracy: 84, awareness: 79 } }
+];

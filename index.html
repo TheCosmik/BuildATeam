@@ -40,8 +40,25 @@
         </div>
 
         <div id="season-sim" class="season-sim hidden">
-          <p class="sim-label">Simulating season...</p>
-          <div id="sim-ticker" class="sim-ticker"></div>
+          <p class="sim-label">Simulating Season</p>
+
+          <div class="scoreboard">
+            <div id="sim-week" class="scoreboard-week">WEEK 1 / 17</div>
+            <div class="scoreboard-score">
+              <div class="score-side">
+                <span class="score-tag">YOU</span>
+                <span id="score-you" class="score-value">0</span>
+              </div>
+              <span class="score-divider">–</span>
+              <div class="score-side">
+                <span id="score-opp" class="score-value">0</span>
+                <span class="score-tag">OPP</span>
+              </div>
+            </div>
+            <div id="sim-flash" class="sim-flash"></div>
+          </div>
+
+          <div id="week-tracker" class="week-tracker"></div>
           <p id="sim-tally" class="sim-tally"></p>
         </div>
 

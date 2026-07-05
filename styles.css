@@ -231,6 +231,7 @@ html, body {
 }
 
 .complete-state {
+  --team-color: #6be26b;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -245,7 +246,6 @@ html, body {
 }
 
 .team-card {
-  --team-color: #6be26b;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -286,28 +286,137 @@ html, body {
   color: rgba(238, 247, 238, 0.6);
 }
 
-.sim-ticker {
+.scoreboard {
+  position: relative;
   width: 100%;
-  height: 90px;
-  overflow-y: auto;
   display: flex;
-  flex-direction: column-reverse;
-  gap: 4px;
-  padding: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(238, 247, 238, 0.12);
-  border-radius: 8px;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 24px 20px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--team-color);
+  border-radius: 14px;
+  box-shadow: 0 0 30px color-mix(in srgb, var(--team-color) 25%, transparent);
+  overflow: hidden;
+}
+
+.scoreboard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 0%, color-mix(in srgb, var(--team-color) 18%, transparent) 45%, transparent 90%);
+  animation: sheen 2.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes sheen {
+  0%   { transform: translateX(-60%); }
+  100% { transform: translateX(60%); }
+}
+
+.scoreboard-week {
   font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--team-color);
 }
 
-.sim-tick {
+.scoreboard-score {
   display: flex;
-  justify-content: space-between;
-  color: rgba(238, 247, 238, 0.7);
+  align-items: center;
+  gap: 18px;
 }
 
-.sim-tick.win { color: #6be26b; }
-.sim-tick.loss { color: #ff6b6b; }
+.score-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 64px;
+}
+
+.score-tag {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: rgba(238, 247, 238, 0.5);
+}
+
+.score-value {
+  font-size: 40px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.score-value.pop {
+  animation: pop 0.35s ease;
+}
+
+@keyframes pop {
+  0%   { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+
+.score-divider {
+  font-size: 26px;
+  color: rgba(238, 247, 238, 0.35);
+}
+
+.sim-flash {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  opacity: 0;
+  background: rgba(4, 10, 6, 0.72);
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+.sim-flash.show {
+  opacity: 1;
+  transition: opacity 0.08s ease;
+}
+
+.sim-flash.win { color: #6be26b; }
+.sim-flash.loss { color: #ff6b6b; }
+
+.week-tracker {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.week-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(238, 247, 238, 0.15);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.week-dot.active {
+  border-color: var(--team-color);
+  transform: scale(1.25);
+}
+
+.week-dot.win {
+  background: #6be26b;
+  border-color: #6be26b;
+}
+
+.week-dot.loss {
+  background: #ff6b6b;
+  border-color: #ff6b6b;
+}
 
 .sim-tally {
   margin: 0;

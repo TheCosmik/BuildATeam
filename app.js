@@ -84,7 +84,11 @@ function takeStat(key) {
 }
 
 const teamBtn = document.getElementById('team-btn');
+const teamRollAnim = document.getElementById('team-roll-anim');
+const rollLogo = document.getElementById('roll-logo');
+const rollAbbr = document.getElementById('roll-abbr');
 const teamCard = document.getElementById('team-card');
+const teamLogo = document.getElementById('team-logo');
 const teamName = document.getElementById('team-name');
 const teamConf = document.getElementById('team-conf');
 const seasonSim = document.getElementById('season-sim');
@@ -99,6 +103,11 @@ const resultRecord = document.getElementById('result-record');
 const resultMsg = document.getElementById('result-msg');
 const continueBtn = document.getElementById('continue-btn');
 const retryBtn = document.getElementById('retry-btn');
+
+function teamLogoUrl(abbr) {
+  const slug = abbr === 'WAS' ? 'wsh' : abbr.toLowerCase();
+  return `https://a.espncdn.com/i/teamlogos/nfl/500/${slug}.png`;
+}
 
 function qbOverall() {
   const values = STATS.map(({ key }) => qb[key]);
@@ -146,6 +155,8 @@ function resetGame() {
   renderStatBoard();
 
   completeState.classList.add('hidden');
+  teamRollAnim.classList.add('hidden');
+  teamRollAnim.classList.remove('settle');
   teamCard.classList.add('hidden');
   seasonSim.classList.add('hidden');
   seasonResult.classList.add('hidden');
@@ -157,73 +168,108 @@ function resetGame() {
   idleState.classList.remove('hidden');
 }
 
+function rollTeamAnimation(target, onDone) {
+  const delays = [70, 80, 90, 110, 130, 160, 200, 250, 310, 380, 460];
+  const picks = delays.map(() => TEAMS[Math.floor(Math.random() * TEAMS.length)]);
+  picks.push(target);
+
+  let i = 0;
+  function showPick() {
+    const team = picks[i];
+    rollLogo.src = teamLogoUrl(team.abbr);
+    rollAbbr.textContent = team.abbr;
+    teamRollAnim.style.setProperty('--team-color', team.color);
+    rollLogo.classList.remove('pop');
+    void rollLogo.offsetWidth;
+    rollLogo.classList.add('pop');
+
+    if (i < delays.length) {
+      setTimeout(() => {
+        i += 1;
+        showPick();
+      }, delays[i]);
+    } else {
+      teamRollAnim.classList.add('settle');
+      setTimeout(onDone, 550);
+    }
+  }
+  showPick();
+}
+
 teamBtn.addEventListener('click', () => {
   const team = TEAMS[Math.floor(Math.random() * TEAMS.length)];
 
   teamBtn.classList.add('hidden');
-  teamName.textContent = `${team.name} (${team.abbr})`;
-  teamConf.textContent = `${team.conf} ${team.div}`;
+  teamRollAnim.classList.remove('hidden', 'settle');
   completeState.style.setProperty('--team-color', team.color);
-  teamCard.classList.remove('hidden');
 
-  seasonResult.classList.add('hidden');
-  scoreYou.textContent = '0';
-  scoreOpp.textContent = '0';
-  simTally.textContent = 'Wins: 0  Losses: 0';
+  rollTeamAnimation(team, () => {
+    teamRollAnim.classList.add('hidden');
 
-  weekTracker.innerHTML = '';
-  const dots = [];
-  for (let w = 1; w <= 17; w++) {
-    const dot = document.createElement('div');
-    dot.className = 'week-dot';
-    weekTracker.appendChild(dot);
-    dots.push(dot);
-  }
+    teamLogo.src = teamLogoUrl(team.abbr);
+    teamName.textContent = `${team.name} (${team.abbr})`;
+    teamConf.textContent = `${team.conf} ${team.div}`;
+    teamCard.classList.remove('hidden');
 
-  seasonSim.classList.remove('hidden');
+    seasonResult.classList.add('hidden');
+    scoreYou.textContent = '0';
+    scoreOpp.textContent = '0';
+    simTally.textContent = 'Wins: 0  Losses: 0';
 
-  const teamOverall = (qbOverall() + team.rating) / 2;
-  const { wins, losses, log } = simulateSeason(teamOverall);
-
-  function runWeek(i) {
-    if (i >= log.length) {
-      setTimeout(() => {
-        seasonSim.classList.add('hidden');
-        showSeasonResult(team, wins, losses);
-      }, 500);
-      return;
+    weekTracker.innerHTML = '';
+    const dots = [];
+    for (let w = 1; w <= 17; w++) {
+      const dot = document.createElement('div');
+      dot.className = 'week-dot';
+      weekTracker.appendChild(dot);
+      dots.push(dot);
     }
 
-    const { week, win } = log[i];
-    simWeek.textContent = `WEEK ${week} / 17`;
-    dots[i].classList.add('active');
+    seasonSim.classList.remove('hidden');
 
-    setTimeout(() => {
-      const { you, opp } = generateScore(win);
-      scoreYou.textContent = you;
-      scoreOpp.textContent = opp;
-      scoreYou.classList.remove('pop');
-      scoreOpp.classList.remove('pop');
-      void scoreYou.offsetWidth;
-      scoreYou.classList.add('pop');
-      scoreOpp.classList.add('pop');
+    const teamOverall = (qbOverall() + team.rating) / 2;
+    const { wins, losses, log } = simulateSeason(teamOverall);
 
-      simFlash.textContent = win ? 'WIN' : 'LOSS';
-      simFlash.className = 'sim-flash show ' + (win ? 'win' : 'loss');
-      setTimeout(() => simFlash.classList.remove('show'), 260);
+    function runWeek(i) {
+      if (i >= log.length) {
+        setTimeout(() => {
+          seasonSim.classList.add('hidden');
+          showSeasonResult(team, wins, losses);
+        }, 500);
+        return;
+      }
 
-      dots[i].classList.remove('active');
-      dots[i].classList.add(win ? 'win' : 'loss');
+      const { week, win } = log[i];
+      simWeek.textContent = `WEEK ${week} / 17`;
+      dots[i].classList.add('active');
 
-      const winsSoFar = log.slice(0, i + 1).filter((g) => g.win).length;
-      const lossesSoFar = i + 1 - winsSoFar;
-      simTally.textContent = `Wins: ${winsSoFar}  Losses: ${lossesSoFar}`;
+      setTimeout(() => {
+        const { you, opp } = generateScore(win);
+        scoreYou.textContent = you;
+        scoreOpp.textContent = opp;
+        scoreYou.classList.remove('pop');
+        scoreOpp.classList.remove('pop');
+        void scoreYou.offsetWidth;
+        scoreYou.classList.add('pop');
+        scoreOpp.classList.add('pop');
 
-      setTimeout(() => runWeek(i + 1), 200);
-    }, 220);
-  }
+        simFlash.textContent = win ? 'WIN' : 'LOSS';
+        simFlash.className = 'sim-flash show ' + (win ? 'win' : 'loss');
+        setTimeout(() => simFlash.classList.remove('show'), 300);
 
-  runWeek(0);
+        dots[i].classList.remove('active');
+        dots[i].classList.add(win ? 'win' : 'loss');
+
+        const winsSoFar = log.slice(0, i + 1).filter((g) => g.win).length;
+        const lossesSoFar = i + 1 - winsSoFar;
+        simTally.textContent = `Wins: ${winsSoFar}  Losses: ${lossesSoFar}`;
+
+        setTimeout(() => runWeek(i + 1), 240);
+      }, 260);
+    }
+
+    runWeek(0);
+  });
 });
 
 function showSeasonResult(team, wins, losses) {

@@ -256,6 +256,13 @@ html, body {
   background: rgba(255, 255, 255, 0.04);
 }
 
+.team-logo {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  margin-bottom: 6px;
+}
+
 .team-name {
   font-size: 20px;
   font-weight: 700;
@@ -267,6 +274,51 @@ html, body {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: rgba(238, 247, 238, 0.55);
+}
+
+.team-roll-anim {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 26px 40px;
+  border: 1px solid var(--team-color);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 0 26px color-mix(in srgb, var(--team-color) 30%, transparent);
+  transition: border-color 0.06s linear, box-shadow 0.06s linear;
+}
+
+.roll-logo {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+}
+
+.roll-logo.pop {
+  animation: rollPop 0.09s ease;
+}
+
+@keyframes rollPop {
+  0%   { transform: scale(0.85); opacity: 0.6; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.roll-abbr {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--team-color);
+}
+
+.team-roll-anim.settle {
+  animation: settlePop 0.45s ease;
+}
+
+@keyframes settlePop {
+  0%   { transform: scale(1.08); }
+  50%  { transform: scale(0.97); }
+  100% { transform: scale(1); }
 }
 
 .season-sim {

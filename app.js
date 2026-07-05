@@ -14,32 +14,43 @@ const qbSource = {};
 let currentPlayer = null;
 let rerollsLeft = MAX_REROLLS;
 
-const FIGURE_MARGIN = 160;
 const FIGURE_IMG_W = 806;
 const FIGURE_IMG_H = 925;
+const LABEL_W = 210;
+const LABEL_H = 118;
+const FIGURE_MARGIN = LABEL_W + 20;
 const FIGURE_VIEW_W = FIGURE_IMG_W + FIGURE_MARGIN * 2;
 const FIGURE_VIEW_H = FIGURE_IMG_H;
 
-const BODY_ANCHORS = {
-  awareness: [530, 10],
-  accuracy: [590, 95],
-  arm: [255, 115],
-  strength: [560, 300],
-  build: [900, 210],
-  speed: [460, 640]
+// Anchor points in the source image's own 806x925 coordinate space.
+const RAW_ANCHORS = {
+  awareness: [370, 10],
+  accuracy: [430, 95],
+  arm: [95, 115],
+  strength: [400, 300],
+  build: [740, 210],
+  speed: [300, 640]
 };
+
+const BODY_ANCHORS = Object.fromEntries(
+  Object.entries(RAW_ANCHORS).map(([key, [x, y]]) => [key, [x + FIGURE_MARGIN, y]])
+);
+
+const LABEL_ROWS = [15, (FIGURE_VIEW_H - LABEL_H) / 2, FIGURE_VIEW_H - LABEL_H - 15];
 
 const BODY_LABELS = {
-  awareness: { x: 10, y: 15, edge: [150, 47] },
-  arm: { x: 10, y: 430, edge: [150, 462] },
-  speed: { x: 10, y: 845, edge: [150, 877] },
-  accuracy: { x: 976, y: 15, edge: [976, 47] },
-  build: { x: 976, y: 430, edge: [976, 462] },
-  strength: { x: 976, y: 845, edge: [976, 877] }
+  awareness: { x: 10, y: LABEL_ROWS[0], side: 'left' },
+  arm: { x: 10, y: LABEL_ROWS[1], side: 'left' },
+  speed: { x: 10, y: LABEL_ROWS[2], side: 'left' },
+  accuracy: { x: FIGURE_VIEW_W - LABEL_W - 10, y: LABEL_ROWS[0], side: 'right' },
+  build: { x: FIGURE_VIEW_W - LABEL_W - 10, y: LABEL_ROWS[1], side: 'right' },
+  strength: { x: FIGURE_VIEW_W - LABEL_W - 10, y: LABEL_ROWS[2], side: 'right' }
 };
 
-const LABEL_W = 150;
-const LABEL_H = 64;
+Object.values(BODY_LABELS).forEach((pos) => {
+  const edgeX = pos.side === 'left' ? pos.x + LABEL_W : pos.x;
+  pos.edge = [edgeX, pos.y + LABEL_H / 2];
+});
 
 const statBoard = document.getElementById('stat-board');
 const idleState = document.getElementById('idle-state');

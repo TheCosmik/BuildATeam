@@ -24,7 +24,7 @@ html, body {
 }
 
 .wrap {
-  max-width: 640px;
+  max-width: 820px;
   margin: 0 auto;
   padding: 56px 20px 80px;
   display: flex;
@@ -46,7 +46,7 @@ html, body {
 
 .qb-figure-wrap {
   width: 100%;
-  max-width: 520px;
+  max-width: 780px;
 }
 
 .qb-figure-svg {
@@ -85,11 +85,11 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  padding: 8px 10px;
+  gap: 4px;
+  padding: 12px 14px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(107, 226, 107, 0.2);
-  border-radius: 10px;
+  border-radius: 12px;
   text-align: center;
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   transition: border-color 0.2s ease, background 0.2s ease;
@@ -101,15 +101,18 @@ html, body {
 }
 
 .body-label-name {
-  font-size: 10px;
+  flex-shrink: 0;
+  font-size: 15px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(238, 247, 238, 0.6);
+  color: rgba(238, 247, 238, 0.65);
+  font-weight: 600;
 }
 
 .body-label-value {
-  font-size: 18px;
-  font-weight: 700;
+  flex-shrink: 0;
+  font-size: 30px;
+  font-weight: 800;
   color: rgba(238, 247, 238, 0.35);
   line-height: 1.1;
 }
@@ -119,8 +122,9 @@ html, body {
 }
 
 .body-label-source {
-  font-size: 10px;
-  color: rgba(238, 247, 238, 0.45);
+  flex-shrink: 0;
+  font-size: 14px;
+  color: rgba(238, 247, 238, 0.5);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

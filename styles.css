@@ -235,10 +235,102 @@ html, body {
   flex-direction: column;
   align-items: center;
   gap: 14px;
+  width: 100%;
 }
 
 .complete-msg {
   margin: 0;
   font-size: 16px;
+  color: rgba(238, 247, 238, 0.8);
+}
+
+.team-card {
+  --team-color: #6be26b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 18px 32px;
+  border: 1px solid var(--team-color);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.team-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--team-color);
+}
+
+.team-conf {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(238, 247, 238, 0.55);
+}
+
+.season-sim {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.sim-label {
+  margin: 0;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(238, 247, 238, 0.6);
+}
+
+.sim-ticker {
+  width: 100%;
+  height: 90px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 4px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(238, 247, 238, 0.12);
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.sim-tick {
+  display: flex;
+  justify-content: space-between;
+  color: rgba(238, 247, 238, 0.7);
+}
+
+.sim-tick.win { color: #6be26b; }
+.sim-tick.loss { color: #ff6b6b; }
+
+.sim-tally {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.season-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.result-record {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.result-msg {
+  margin: 0;
+  font-size: 15px;
+  text-align: center;
   color: rgba(238, 247, 238, 0.8);
 }

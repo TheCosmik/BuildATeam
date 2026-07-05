@@ -32,12 +32,31 @@
 
       <div id="complete-state" class="complete-state hidden">
         <p class="complete-msg">Your QB is built.</p>
-        <button id="team-btn" class="btn primary" disabled>Roll for Team (coming soon)</button>
+        <button id="team-btn" class="btn primary">Roll for Team</button>
+
+        <div id="team-card" class="team-card hidden">
+          <span id="team-name" class="team-name"></span>
+          <span id="team-conf" class="team-conf"></span>
+        </div>
+
+        <div id="season-sim" class="season-sim hidden">
+          <p class="sim-label">Simulating season...</p>
+          <div id="sim-ticker" class="sim-ticker"></div>
+          <p id="sim-tally" class="sim-tally"></p>
+        </div>
+
+        <div id="season-result" class="season-result hidden">
+          <p id="result-record" class="result-record"></p>
+          <p id="result-msg" class="result-msg"></p>
+          <button id="continue-btn" class="btn primary hidden" disabled>Continue to Playoffs (coming soon)</button>
+          <button id="retry-btn" class="btn secondary hidden">Try Again</button>
+        </div>
       </div>
     </section>
   </main>
 
   <script src="players.js"></script>
+  <script src="teams.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

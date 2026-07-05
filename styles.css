@@ -55,34 +55,8 @@ html, body {
   overflow: visible;
 }
 
-.qb-head,
-.qb-torso,
-.qb-hips,
-.qb-limb,
-.qb-cleat {
-  fill: #14241a;
-  stroke: rgba(107, 226, 107, 0.55);
-  stroke-width: 1.5;
-}
-
-.qb-limb-back {
-  fill: #0e1c14;
-}
-
-.qb-facemask {
-  stroke: rgba(107, 226, 107, 0.35);
-  stroke-width: 1.5;
-}
-
-.qb-ball {
-  fill: #7a4321;
-  stroke: rgba(238, 247, 238, 0.35);
-  stroke-width: 1;
-}
-
-.qb-ball-lace {
-  stroke: rgba(238, 247, 238, 0.6);
-  stroke-width: 1;
+.qb-figure-img {
+  filter: drop-shadow(0 0 8px rgba(107, 226, 107, 0.45)) drop-shadow(0 0 18px rgba(107, 226, 107, 0.2));
 }
 
 .callout-line {

@@ -14,25 +14,31 @@ const qbSource = {};
 let currentPlayer = null;
 let rerollsLeft = MAX_REROLLS;
 
+const FIGURE_MARGIN = 160;
+const FIGURE_IMG_W = 806;
+const FIGURE_IMG_H = 925;
+const FIGURE_VIEW_W = FIGURE_IMG_W + FIGURE_MARGIN * 2;
+const FIGURE_VIEW_H = FIGURE_IMG_H;
+
 const BODY_ANCHORS = {
-  awareness: [250, 25],
-  accuracy: [262, 42],
-  arm: [298, 32],
-  strength: [250, 130],
-  build: [250, 205],
-  speed: [226, 235]
+  awareness: [530, 10],
+  accuracy: [590, 95],
+  arm: [255, 115],
+  strength: [560, 300],
+  build: [900, 210],
+  speed: [460, 640]
 };
 
 const BODY_LABELS = {
-  awareness: { x: 10, y: 10, edge: [162, 42] },
-  strength: { x: 10, y: 148, edge: [162, 180] },
-  speed: { x: 10, y: 286, edge: [162, 318] },
-  accuracy: { x: 338, y: 10, edge: [338, 42] },
-  arm: { x: 338, y: 148, edge: [338, 180] },
-  build: { x: 338, y: 286, edge: [338, 318] }
+  awareness: { x: 10, y: 15, edge: [150, 47] },
+  arm: { x: 10, y: 430, edge: [150, 462] },
+  speed: { x: 10, y: 845, edge: [150, 877] },
+  accuracy: { x: 976, y: 15, edge: [976, 47] },
+  build: { x: 976, y: 430, edge: [976, 462] },
+  strength: { x: 976, y: 845, edge: [976, 877] }
 };
 
-const LABEL_W = 152;
+const LABEL_W = 150;
 const LABEL_H = 64;
 
 const statBoard = document.getElementById('stat-board');
@@ -46,15 +52,6 @@ const playerName = document.getElementById('player-name');
 const playerTeam = document.getElementById('player-team');
 const playerBio = document.getElementById('player-bio');
 const playerStats = document.getElementById('player-stats');
-
-function limbRect(x1, y1, x2, y2, thickness, cls) {
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-  const length = Math.sqrt(dx * dx + dy * dy);
-  const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
-  const r = thickness / 2;
-  return `<rect x="${x1}" y="${y1 - r}" width="${length}" height="${thickness}" rx="${r}" ry="${r}" transform="rotate(${angle} ${x1} ${y1})" class="${cls}" />`;
-}
 
 function renderStatBoard() {
   let callouts = '';
@@ -82,31 +79,10 @@ function renderStatBoard() {
     `;
   });
 
-  const limbs = [
-    limbRect(266, 208, 290, 266, 28, 'qb-limb qb-limb-back'),
-    limbRect(290, 266, 303, 330, 21, 'qb-limb qb-limb-back'),
-    limbRect(280, 95, 312, 73, 24, 'qb-limb qb-limb-back'),
-    limbRect(312, 73, 300, 34, 19, 'qb-limb qb-limb-back'),
-    limbRect(234, 208, 218, 270, 28, 'qb-limb'),
-    limbRect(218, 270, 210, 332, 21, 'qb-limb'),
-    limbRect(220, 95, 192, 122, 22, 'qb-limb'),
-    limbRect(192, 122, 175, 107, 17, 'qb-limb')
-  ].join('');
-
   statBoard.innerHTML = `
-    <svg viewBox="0 0 500 400" class="qb-figure-svg" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 ${FIGURE_VIEW_W} ${FIGURE_VIEW_H}" class="qb-figure-svg" xmlns="http://www.w3.org/2000/svg">
+      <image href="qb-figure.png" x="${FIGURE_MARGIN}" y="0" width="${FIGURE_IMG_W}" height="${FIGURE_IMG_H}" class="qb-figure-img" />
       ${callouts}
-      <ellipse cx="308" cy="332" rx="17" ry="7" class="qb-cleat" transform="rotate(8 308 332)" />
-      <ellipse cx="204" cy="336" rx="17" ry="7" class="qb-cleat" transform="rotate(-6 204 336)" />
-      ${limbs}
-      <path d="M224,190 L276,190 L286,218 L214,218 Z" class="qb-hips" />
-      <path d="M212,85 Q250,62 288,85 L276,192 Q250,204 224,192 Z" class="qb-torso" />
-      <ellipse cx="298" cy="32" rx="13" ry="7" class="qb-ball" transform="rotate(-25 298 32)" />
-      <line x1="292" y1="30" x2="304" y2="34" class="qb-ball-lace" />
-      <ellipse cx="250" cy="45" rx="20" ry="23" class="qb-head" />
-      <line x1="259" y1="40" x2="274" y2="38" class="qb-facemask" />
-      <line x1="259" y1="46" x2="275" y2="45" class="qb-facemask" />
-      <line x1="259" y1="52" x2="274" y2="52" class="qb-facemask" />
       ${labels}
     </svg>
   `;

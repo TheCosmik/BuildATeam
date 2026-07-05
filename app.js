@@ -10,8 +10,30 @@ const STATS = [
 const MAX_REROLLS = 2;
 
 const qb = {};
+const qbSource = {};
 let currentPlayer = null;
 let rerollsLeft = MAX_REROLLS;
+
+const BODY_ANCHORS = {
+  awareness: [248, 40],
+  accuracy: [268, 48],
+  arm: [300, 33],
+  strength: [252, 122],
+  build: [270, 193],
+  speed: [222, 253]
+};
+
+const BODY_LABELS = {
+  awareness: { x: 10, y: 10, edge: [162, 42] },
+  strength: { x: 10, y: 148, edge: [162, 180] },
+  speed: { x: 10, y: 286, edge: [162, 318] },
+  accuracy: { x: 338, y: 10, edge: [338, 42] },
+  arm: { x: 338, y: 148, edge: [338, 180] },
+  build: { x: 338, y: 286, edge: [338, 318] }
+};
+
+const LABEL_W = 152;
+const LABEL_H = 64;
 
 const statBoard = document.getElementById('stat-board');
 const idleState = document.getElementById('idle-state');
@@ -26,17 +48,43 @@ const playerBio = document.getElementById('player-bio');
 const playerStats = document.getElementById('player-stats');
 
 function renderStatBoard() {
-  statBoard.innerHTML = '';
+  let linesAndDots = '';
+  let labels = '';
+
   STATS.forEach(({ key, label }) => {
-    const slot = document.createElement('div');
+    const [ax, ay] = BODY_ANCHORS[key];
+    const pos = BODY_LABELS[key];
+    const [ex, ey] = pos.edge;
     const filled = qb[key] !== undefined;
-    slot.className = 'stat-slot' + (filled ? ' filled' : '');
-    slot.innerHTML = `
-      <span class="stat-slot-label">${label}</span>
-      <span class="stat-slot-value">${filled ? qb[key] : '—'}</span>
+    const source = qbSource[key];
+
+    linesAndDots += `<line x1="${ax}" y1="${ay}" x2="${ex}" y2="${ey}" class="callout-line${filled ? ' filled' : ''}" />`;
+    linesAndDots += `<circle cx="${ax}" cy="${ay}" r="4" class="callout-dot${filled ? ' filled' : ''}" />`;
+
+    labels += `
+      <foreignObject x="${pos.x}" y="${pos.y}" width="${LABEL_W}" height="${LABEL_H}">
+        <div xmlns="http://www.w3.org/1999/xhtml" class="body-label${filled ? ' filled' : ''}">
+          <span class="body-label-name">${label}</span>
+          <span class="body-label-value">${filled ? qb[key] : '—'}</span>
+          <span class="body-label-source">${filled ? source.name : 'Not rolled yet'}</span>
+        </div>
+      </foreignObject>
     `;
-    statBoard.appendChild(slot);
   });
+
+  statBoard.innerHTML = `
+    <svg viewBox="0 0 500 360" class="qb-figure-svg" xmlns="http://www.w3.org/2000/svg">
+      ${linesAndDots}
+      <path d="M258,63 L262,150" class="qb-body" />
+      <path d="M262,150 L235,158 L222,253" class="qb-leg" />
+      <path d="M262,150 L288,162 L302,225 L294,288" class="qb-leg" />
+      <path d="M255,95 L215,108 L180,100" class="qb-arm" />
+      <path d="M262,88 L302,66 L300,33" class="qb-arm" />
+      <ellipse cx="294" cy="30" rx="11" ry="6" class="qb-ball" transform="rotate(-25 294 30)" />
+      <circle cx="250" cy="45" r="19" class="qb-head" />
+      ${labels}
+    </svg>
+  `;
 }
 
 function randomPlayer() {
@@ -75,6 +123,7 @@ function renderPlayerCard() {
 
 function takeStat(key) {
   qb[key] = currentPlayer.stats[key];
+  qbSource[key] = { name: currentPlayer.name, photo: currentPlayer.photo };
   currentPlayer = null;
   renderStatBoard();
 
@@ -219,6 +268,7 @@ function buildGameDrives(win) {
 
 function resetGame() {
   STATS.forEach(({ key }) => delete qb[key]);
+  STATS.forEach(({ key }) => delete qbSource[key]);
   currentPlayer = null;
   rerollsLeft = MAX_REROLLS;
   renderStatBoard();

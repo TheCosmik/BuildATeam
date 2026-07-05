@@ -153,8 +153,25 @@ html, body {
 
 .player-card-head {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.player-photo {
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  object-fit: cover;
+  object-position: top;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(107, 226, 107, 0.3);
+  flex-shrink: 0;
+}
+
+.player-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .player-name {
@@ -164,8 +181,13 @@ html, body {
 
 .player-team {
   font-size: 13px;
-  letter-spacing: 0.1em;
-  color: rgba(238, 247, 238, 0.55);
+  letter-spacing: 0.06em;
+  color: rgba(238, 247, 238, 0.6);
+}
+
+.player-bio {
+  font-size: 12px;
+  color: rgba(238, 247, 238, 0.45);
 }
 
 .player-stats {

@@ -19,8 +19,10 @@ const playerCard = document.getElementById('player-card');
 const completeState = document.getElementById('complete-state');
 const rollBtn = document.getElementById('roll-btn');
 const rerollBtn = document.getElementById('reroll-btn');
+const playerPhoto = document.getElementById('player-photo');
 const playerName = document.getElementById('player-name');
 const playerTeam = document.getElementById('player-team');
+const playerBio = document.getElementById('player-bio');
 const playerStats = document.getElementById('player-stats');
 
 function renderStatBoard() {
@@ -42,8 +44,12 @@ function randomPlayer() {
 }
 
 function renderPlayerCard() {
+  const team = TEAMS.find((t) => t.abbr === currentPlayer.team);
+
+  playerPhoto.src = currentPlayer.photo;
   playerName.textContent = currentPlayer.name;
-  playerTeam.textContent = currentPlayer.team;
+  playerTeam.textContent = team ? `${team.name} — ${team.conf} ${team.div}` : currentPlayer.team;
+  playerBio.textContent = `QB · #${currentPlayer.jersey} · ${currentPlayer.experience} yrs exp · ${currentPlayer.college}`;
   playerStats.innerHTML = '';
 
   STATS.forEach(({ key, label }) => {

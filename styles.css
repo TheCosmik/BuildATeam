@@ -55,37 +55,44 @@ html, body {
   overflow: visible;
 }
 
-.qb-head {
-  fill: rgba(107, 226, 107, 0.18);
-  stroke: rgba(107, 226, 107, 0.6);
-  stroke-width: 2;
+.qb-head,
+.qb-torso,
+.qb-hips,
+.qb-limb,
+.qb-cleat {
+  fill: #14241a;
+  stroke: rgba(107, 226, 107, 0.55);
+  stroke-width: 1.5;
 }
 
-.qb-body,
-.qb-arm,
-.qb-leg {
-  fill: none;
-  stroke: rgba(107, 226, 107, 0.5);
-  stroke-width: 14;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.qb-limb-back {
+  fill: #0e1c14;
+}
+
+.qb-facemask {
+  stroke: rgba(107, 226, 107, 0.35);
+  stroke-width: 1.5;
 }
 
 .qb-ball {
-  fill: #b5651d;
-  stroke: rgba(238, 247, 238, 0.4);
+  fill: #7a4321;
+  stroke: rgba(238, 247, 238, 0.35);
+  stroke-width: 1;
+}
+
+.qb-ball-lace {
+  stroke: rgba(238, 247, 238, 0.6);
   stroke-width: 1;
 }
 
 .callout-line {
-  stroke: rgba(238, 247, 238, 0.18);
+  fill: none;
+  stroke: rgba(238, 247, 238, 0.2);
   stroke-width: 1.5;
-  stroke-dasharray: 3 3;
 }
 
 .callout-line.filled {
-  stroke: rgba(107, 226, 107, 0.55);
-  stroke-dasharray: none;
+  stroke: rgba(107, 226, 107, 0.6);
 }
 
 .callout-dot {

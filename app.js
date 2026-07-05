@@ -15,12 +15,12 @@ let currentPlayer = null;
 let rerollsLeft = MAX_REROLLS;
 
 const BODY_ANCHORS = {
-  awareness: [248, 40],
-  accuracy: [268, 48],
-  arm: [300, 33],
-  strength: [252, 122],
-  build: [270, 193],
-  speed: [222, 253]
+  awareness: [250, 25],
+  accuracy: [262, 42],
+  arm: [298, 32],
+  strength: [250, 130],
+  build: [250, 205],
+  speed: [226, 235]
 };
 
 const BODY_LABELS = {
@@ -47,8 +47,17 @@ const playerTeam = document.getElementById('player-team');
 const playerBio = document.getElementById('player-bio');
 const playerStats = document.getElementById('player-stats');
 
+function limbRect(x1, y1, x2, y2, thickness, cls) {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const length = Math.sqrt(dx * dx + dy * dy);
+  const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+  const r = thickness / 2;
+  return `<rect x="${x1}" y="${y1 - r}" width="${length}" height="${thickness}" rx="${r}" ry="${r}" transform="rotate(${angle} ${x1} ${y1})" class="${cls}" />`;
+}
+
 function renderStatBoard() {
-  let linesAndDots = '';
+  let callouts = '';
   let labels = '';
 
   STATS.forEach(({ key, label }) => {
@@ -57,9 +66,10 @@ function renderStatBoard() {
     const [ex, ey] = pos.edge;
     const filled = qb[key] !== undefined;
     const source = qbSource[key];
+    const bendX = ax + (ex - ax) * 0.6;
 
-    linesAndDots += `<line x1="${ax}" y1="${ay}" x2="${ex}" y2="${ey}" class="callout-line${filled ? ' filled' : ''}" />`;
-    linesAndDots += `<circle cx="${ax}" cy="${ay}" r="4" class="callout-dot${filled ? ' filled' : ''}" />`;
+    callouts += `<polyline points="${ax},${ay} ${bendX},${ey} ${ex},${ey}" class="callout-line${filled ? ' filled' : ''}" />`;
+    callouts += `<circle cx="${ax}" cy="${ay}" r="4.5" class="callout-dot${filled ? ' filled' : ''}" />`;
 
     labels += `
       <foreignObject x="${pos.x}" y="${pos.y}" width="${LABEL_W}" height="${LABEL_H}">
@@ -72,16 +82,31 @@ function renderStatBoard() {
     `;
   });
 
+  const limbs = [
+    limbRect(266, 208, 290, 266, 28, 'qb-limb qb-limb-back'),
+    limbRect(290, 266, 303, 330, 21, 'qb-limb qb-limb-back'),
+    limbRect(280, 95, 312, 73, 24, 'qb-limb qb-limb-back'),
+    limbRect(312, 73, 300, 34, 19, 'qb-limb qb-limb-back'),
+    limbRect(234, 208, 218, 270, 28, 'qb-limb'),
+    limbRect(218, 270, 210, 332, 21, 'qb-limb'),
+    limbRect(220, 95, 192, 122, 22, 'qb-limb'),
+    limbRect(192, 122, 175, 107, 17, 'qb-limb')
+  ].join('');
+
   statBoard.innerHTML = `
-    <svg viewBox="0 0 500 360" class="qb-figure-svg" xmlns="http://www.w3.org/2000/svg">
-      ${linesAndDots}
-      <path d="M258,63 L262,150" class="qb-body" />
-      <path d="M262,150 L235,158 L222,253" class="qb-leg" />
-      <path d="M262,150 L288,162 L302,225 L294,288" class="qb-leg" />
-      <path d="M255,95 L215,108 L180,100" class="qb-arm" />
-      <path d="M262,88 L302,66 L300,33" class="qb-arm" />
-      <ellipse cx="294" cy="30" rx="11" ry="6" class="qb-ball" transform="rotate(-25 294 30)" />
-      <circle cx="250" cy="45" r="19" class="qb-head" />
+    <svg viewBox="0 0 500 400" class="qb-figure-svg" xmlns="http://www.w3.org/2000/svg">
+      ${callouts}
+      <ellipse cx="308" cy="332" rx="17" ry="7" class="qb-cleat" transform="rotate(8 308 332)" />
+      <ellipse cx="204" cy="336" rx="17" ry="7" class="qb-cleat" transform="rotate(-6 204 336)" />
+      ${limbs}
+      <path d="M224,190 L276,190 L286,218 L214,218 Z" class="qb-hips" />
+      <path d="M212,85 Q250,62 288,85 L276,192 Q250,204 224,192 Z" class="qb-torso" />
+      <ellipse cx="298" cy="32" rx="13" ry="7" class="qb-ball" transform="rotate(-25 298 32)" />
+      <line x1="292" y1="30" x2="304" y2="34" class="qb-ball-lace" />
+      <ellipse cx="250" cy="45" rx="20" ry="23" class="qb-head" />
+      <line x1="259" y1="40" x2="274" y2="38" class="qb-facemask" />
+      <line x1="259" y1="46" x2="275" y2="45" class="qb-facemask" />
+      <line x1="259" y1="52" x2="274" y2="52" class="qb-facemask" />
       ${labels}
     </svg>
   `;

@@ -180,6 +180,7 @@ const playoffYourLogo = document.getElementById('playoff-your-logo');
 const playoffOppLogo = document.getElementById('playoff-opp-logo');
 const playoffYourScore = document.getElementById('playoff-your-score');
 const playoffOppScore = document.getElementById('playoff-opp-score');
+const playoffYourName = document.getElementById('playoff-your-name');
 const playoffOppName = document.getElementById('playoff-opp-name');
 const playoffResult = document.getElementById('playoff-result');
 const playoffResultMsg = document.getElementById('playoff-result-msg');
@@ -473,7 +474,8 @@ async function runPlayoffRound(roundIdx, ctx) {
   playoffRoundLabel.textContent = roundName.toUpperCase();
   playoffYourLogo.src = teamLogoUrl(team.abbr);
   playoffOppLogo.src = teamLogoUrl(opponent.abbr);
-  playoffOppName.textContent = `vs ${opponent.name}`;
+  playoffYourName.textContent = team.name;
+  playoffOppName.textContent = opponent.name;
   playoffYourScore.textContent = '0';
   playoffOppScore.textContent = '0';
   gameField.style.setProperty('--opp-color', opponent.color);

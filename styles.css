@@ -661,24 +661,37 @@ html, body {
 .playoff-score {
   display: flex;
   align-items: center;
-  gap: 18px;
+  justify-content: center;
+  gap: 28px;
 }
 
-.playoff-score-side {
+.playoff-team-col {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  width: 120px;
 }
 
 .playoff-logo {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   object-fit: contain;
 }
 
+.playoff-team-name {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(238, 247, 238, 0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
 .playoff-score-value {
-  font-size: 34px;
+  font-size: 36px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -687,10 +700,13 @@ html, body {
   animation: pop 0.35s ease;
 }
 
-.playoff-opp-name {
-  margin: 0;
-  font-size: 13px;
-  color: rgba(238, 247, 238, 0.6);
+.playoff-vs {
+  align-self: center;
+  margin-top: 24px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(238, 247, 238, 0.4);
 }
 
 .playoff-result {

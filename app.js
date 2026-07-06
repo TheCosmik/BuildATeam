@@ -433,6 +433,15 @@ playoffRetryBtn.addEventListener('click', resetGame);
 
 async function animateDrive(drive, refs) {
   const target = drive.side === 'you' ? 90 : 10;
+  const isFieldGoal = drive.pts === 3;
+
+  ball.classList.remove('kicking');
+  if (isFieldGoal) {
+    ball.style.setProperty('--spin-dir', drive.side === 'you' ? '1' : '-1');
+    void ball.offsetWidth;
+    ball.classList.add('kicking');
+  }
+
   ball.style.left = target + '%';
   await wait(1100);
 

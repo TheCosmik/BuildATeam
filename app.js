@@ -372,11 +372,11 @@ function buildGameDrives(win) {
   let yourScore = yourPlays.reduce((a, b) => a + b, 0);
   let oppScore = oppPlays.reduce((a, b) => a + b, 0);
 
-  if (win && yourScore <= oppScore) {
+  while (win && yourScore <= oppScore) {
     yourPlays.push(7);
     yourScore += 7;
   }
-  if (!win && oppScore <= yourScore) {
+  while (!win && oppScore <= yourScore) {
     oppPlays.push(7);
     oppScore += 7;
   }

@@ -313,6 +313,40 @@ html, body {
   color: rgba(238, 247, 238, 0.8);
 }
 
+.clerk-auth {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 20;
+}
+
+.name-qb-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
+
+.name-qb-form {
+  display: flex;
+  gap: 10px;
+}
+
+.name-qb-form input {
+  padding: 10px 14px;
+  font-size: 14px;
+  color: #eef7ee;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(107, 226, 107, 0.3);
+  border-radius: 8px;
+  outline: none;
+}
+
+.name-qb-form input:focus {
+  border-color: rgba(107, 226, 107, 0.6);
+}
+
 .team-card {
   display: flex;
   flex-direction: column;
@@ -732,4 +766,42 @@ html, body {
   font-weight: 700;
   text-align: center;
   color: rgba(238, 247, 238, 0.9);
+}
+
+.profile-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 40px 48px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(107, 226, 107, 0.3);
+  border-radius: 14px;
+  text-align: center;
+}
+
+.profile-status {
+  margin: 0;
+  color: rgba(238, 247, 238, 0.6);
+}
+
+.profile-username {
+  margin: 0;
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(238, 247, 238, 0.6);
+}
+
+.profile-character {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  color: #6be26b;
+}
+
+.profile-wins {
+  margin: 0;
+  font-size: 15px;
+  color: rgba(238, 247, 238, 0.85);
 }

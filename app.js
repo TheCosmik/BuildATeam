@@ -64,6 +64,92 @@ const playerTeam = document.getElementById('player-team');
 const playerBio = document.getElementById('player-bio');
 const playerStats = document.getElementById('player-stats');
 
+const clerkAuthEl = document.getElementById('clerk-auth');
+const nameQbState = document.getElementById('name-qb-state');
+const nameQbForm = document.getElementById('name-qb-form');
+const characterNameInput = document.getElementById('character-name-input');
+
+let characterName = null;
+
+function isSignedIn() {
+  return Boolean(window.Clerk && window.Clerk.user);
+}
+
+async function authedFetch(url, options = {}) {
+  const token = await window.Clerk.session.getToken();
+  return fetch(url, {
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+      Authorization: `Bearer ${token}`
+    }
+  });
+}
+
+async function saveCharacter(name) {
+  if (!isSignedIn()) return;
+  try {
+    await authedFetch('/api/character-save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ characterName: name, stats: qb, statSources: qbSource })
+    });
+  } catch (error) {
+    console.error('Failed to save character', error);
+  }
+}
+
+async function fetchSavedCharacter() {
+  if (!isSignedIn()) return null;
+  try {
+    const res = await authedFetch('/api/character-get');
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.character || null;
+  } catch (error) {
+    console.error('Failed to fetch saved character', error);
+    return null;
+  }
+}
+
+function restoreCharacter(saved) {
+  STATS.forEach(({ key }) => {
+    if (saved.stats && saved.stats[key] !== undefined) qb[key] = saved.stats[key];
+    if (saved.stat_sources && saved.stat_sources[key]) qbSource[key] = saved.stat_sources[key];
+  });
+  characterName = saved.character_name || null;
+  renderStatBoard();
+  idleState.classList.add('hidden');
+  completeState.classList.remove('hidden');
+}
+
+function initClerk() {
+  window.Clerk.load().then(async () => {
+    if (window.Clerk.user) {
+      window.Clerk.mountUserButton(clerkAuthEl);
+      const saved = await fetchSavedCharacter();
+      if (saved) restoreCharacter(saved);
+    } else {
+      window.Clerk.mountSignIn(clerkAuthEl);
+    }
+  });
+}
+
+if (window.Clerk) {
+  initClerk();
+} else {
+  window.__clerkLoaded = initClerk;
+}
+
+nameQbForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  characterName = characterNameInput.value.trim();
+  if (!characterName) return;
+  saveCharacter(characterName);
+  nameQbState.classList.add('hidden');
+  completeState.classList.remove('hidden');
+});
+
 function renderStatBoard() {
   let callouts = '';
   let labels = '';
@@ -144,7 +230,11 @@ function takeStat(key) {
 
   if (allFilled) {
     idleState.classList.add('hidden');
-    completeState.classList.remove('hidden');
+    if (isSignedIn()) {
+      nameQbState.classList.remove('hidden');
+    } else {
+      completeState.classList.remove('hidden');
+    }
   } else {
     idleState.classList.remove('hidden');
   }
@@ -287,6 +377,9 @@ function resetGame() {
   renderStatBoard();
 
   completeState.classList.add('hidden');
+  nameQbState.classList.add('hidden');
+  characterNameInput.value = '';
+  characterName = null;
   teamRollAnim.classList.add('hidden');
   teamRollAnim.classList.remove('settle');
   teamCard.classList.add('hidden');
@@ -523,6 +616,11 @@ function showPlayoffFinal(champion, team, opponent, yourScore, oppScore, lostRou
 
   if (champion) {
     playoffResultMsg.textContent = `\u{1F3C6} ${team.name} are Super Bowl Champions! (${yourScore}-${oppScore} in the Super Bowl)`;
+    if (isSignedIn()) {
+      authedFetch('/api/superbowl-win', { method: 'POST' }).catch((error) => {
+        console.error('Failed to record Super Bowl win', error);
+      });
+    }
   } else {
     playoffResultMsg.textContent = `${team.name} were eliminated in the ${lostRound} (lost ${yourScore}-${oppScore} to ${opponent.name}).`;
   }

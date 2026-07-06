@@ -5,9 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Build-A-Team</title>
 <link rel="stylesheet" href="styles.css">
+<script
+  async
+  crossorigin="anonymous"
+  data-clerk-publishable-key="pk_test_Y29vbC1ncnViLTgwLmNsZXJrLmFjY291bnRzLmRldiQ"
+  onload="window.__clerkLoaded && window.__clerkLoaded()"
+  src="https://cool-grub-80.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+  type="text/javascript"
+></script>
 </head>
 <body>
   <div class="field-bg"></div>
+
+  <div id="clerk-auth" class="clerk-auth"></div>
 
   <main class="wrap">
     <h1 class="title">Build-A-<span>QB</span></h1>
@@ -32,6 +42,14 @@
         <div class="player-card-actions">
           <button id="reroll-btn" class="btn secondary">Reroll (2 left)</button>
         </div>
+      </div>
+
+      <div id="name-qb-state" class="name-qb-state hidden">
+        <p class="complete-msg">Your QB is built. Give your character a name:</p>
+        <form id="name-qb-form" class="name-qb-form">
+          <input id="character-name-input" type="text" maxlength="40" placeholder="Character name" required>
+          <button type="submit" class="btn primary">Confirm</button>
+        </form>
       </div>
 
       <div id="complete-state" class="complete-state hidden">

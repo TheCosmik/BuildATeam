@@ -1,0 +1,8 @@
+{
+  "name": "build-a-team",
+  "private": true,
+  "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
+    "@clerk/backend": "^3.10.0"
+  }
+}

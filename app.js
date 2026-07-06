@@ -64,7 +64,10 @@ const playerTeam = document.getElementById('player-team');
 const playerBio = document.getElementById('player-bio');
 const playerStats = document.getElementById('player-stats');
 
-const clerkAuthEl = document.getElementById('clerk-auth');
+const authSignInBtn = document.getElementById('auth-signin-btn');
+const authSignedIn = document.getElementById('auth-signed-in');
+const authUsername = document.getElementById('auth-username');
+const authSignOutBtn = document.getElementById('auth-signout-btn');
 const nameQbState = document.getElementById('name-qb-state');
 const nameQbForm = document.getElementById('name-qb-form');
 const characterNameInput = document.getElementById('character-name-input');
@@ -123,14 +126,34 @@ function restoreCharacter(saved) {
   completeState.classList.remove('hidden');
 }
 
+function updateAuthUI() {
+  if (isSignedIn()) {
+    authSignInBtn.classList.add('hidden');
+    authSignedIn.classList.remove('hidden');
+    const user = window.Clerk.user;
+    authUsername.textContent = user.username || user.firstName || 'Player';
+  } else {
+    authSignInBtn.classList.remove('hidden');
+    authSignedIn.classList.add('hidden');
+  }
+}
+
+authSignInBtn.addEventListener('click', () => {
+  window.Clerk.openSignIn({});
+});
+
+authSignOutBtn.addEventListener('click', () => {
+  window.Clerk.signOut().then(() => window.location.reload());
+});
+
 function initClerk() {
   window.Clerk.load().then(async () => {
+    updateAuthUI();
+    window.Clerk.addListener(() => updateAuthUI());
+
     if (window.Clerk.user) {
-      window.Clerk.mountUserButton(clerkAuthEl);
       const saved = await fetchSavedCharacter();
       if (saved) restoreCharacter(saved);
-    } else {
-      window.Clerk.mountSignIn(clerkAuthEl);
     }
   });
 }

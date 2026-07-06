@@ -320,6 +320,23 @@ html, body {
   z-index: 20;
 }
 
+.auth-btn {
+  padding: 8px 16px;
+  font-size: 12px;
+}
+
+.auth-signed-in {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.auth-username {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6be26b;
+}
+
 .name-qb-state {
   display: flex;
   flex-direction: column;

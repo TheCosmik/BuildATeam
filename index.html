@@ -17,7 +17,13 @@
 <body>
   <div class="field-bg"></div>
 
-  <div id="clerk-auth" class="clerk-auth"></div>
+  <div id="clerk-auth" class="clerk-auth">
+    <button id="auth-signin-btn" class="btn secondary auth-btn hidden">Sign In</button>
+    <div id="auth-signed-in" class="auth-signed-in hidden">
+      <span id="auth-username" class="auth-username"></span>
+      <button id="auth-signout-btn" class="btn secondary auth-btn">Sign Out</button>
+    </div>
+  </div>
 
   <main class="wrap">
     <h1 class="title">Build-A-<span>QB</span></h1>

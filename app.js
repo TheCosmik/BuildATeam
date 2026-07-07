@@ -278,6 +278,10 @@ const scoreOpp = document.getElementById('score-opp');
 const simFlash = document.getElementById('sim-flash');
 const weekTracker = document.getElementById('week-tracker');
 const simTally = document.getElementById('sim-tally');
+const clutchMoment = document.getElementById('clutch-moment');
+const clutchSituationEl = document.getElementById('clutch-situation');
+const clutchPlays = document.getElementById('clutch-plays');
+const clutchOutcome = document.getElementById('clutch-outcome');
 const seasonResult = document.getElementById('season-result');
 const resultRecord = document.getElementById('result-record');
 const resultMsg = document.getElementById('result-msg');
@@ -314,26 +318,126 @@ function qbOverall() {
 
 function simulateSeason(teamOverall) {
   const log = [];
-  let wins = 0;
-  let losses = 0;
   for (let week = 1; week <= 17; week++) {
     const oppRating = 65 + Math.random() * 30;
     let winProb = 0.5 + (teamOverall - oppRating) / 150;
     winProb = Math.min(0.92, Math.max(0.08, winProb));
-    const win = Math.random() < winProb;
-    if (win) wins += 1; else losses += 1;
-    log.push({ week, win });
+    log.push({ week, winProb, win: null, pivotal: false });
   }
-  return { wins, losses, log };
+
+  // 3-5 games come down to a final play the user calls. Favor the
+  // closest matchups, with jitter so it's not the same picks every run.
+  const clutchCount = 3 + Math.floor(Math.random() * 3);
+  [...log]
+    .sort((a, b) =>
+      (Math.abs(a.winProb - 0.5) + Math.random() * 0.15) -
+      (Math.abs(b.winProb - 0.5) + Math.random() * 0.15))
+    .slice(0, clutchCount)
+    .forEach((game) => { game.pivotal = true; });
+
+  log.forEach((game) => {
+    if (!game.pivotal) game.win = Math.random() < game.winProb;
+  });
+
+  return log;
 }
 
-function generateScore(win) {
+function generateScore(win, close) {
   const base = 14 + Math.floor(Math.random() * 21);
-  const margin = 7 + Math.floor(Math.random() * 18);
+  const margin = close
+    ? 1 + Math.floor(Math.random() * 5)
+    : 7 + Math.floor(Math.random() * 18);
   if (win) {
     return { you: base, opp: Math.max(3, base - margin) };
   }
   return { you: Math.max(3, base - margin), opp: base };
+}
+
+const CLUTCH_PLAYS = [
+  {
+    name: 'Deep Shot',
+    desc: 'Launch it downfield',
+    stats: ['arm', 'accuracy'],
+    floor: 42, range: 62, min: 0.2, max: 0.88,
+    success: 'TOUCHDOWN BOMB!',
+    fail: 'PICKED OFF DEEP!'
+  },
+  {
+    name: 'QB Scramble',
+    desc: 'Tuck it and run',
+    stats: ['speed', 'strength'],
+    floor: 40, range: 62, min: 0.22, max: 0.86,
+    success: 'HE TAKES OFF — TOUCHDOWN!',
+    fail: 'STUFFED AT THE LINE!'
+  },
+  {
+    name: 'Quick Slant',
+    desc: 'The safe, smart throw',
+    stats: ['accuracy', 'awareness'],
+    floor: 25, range: 75, min: 0.4, max: 0.78,
+    success: 'THREADED IN — SCORE!',
+    fail: 'BATTED DOWN!'
+  }
+];
+
+function clutchChance(play) {
+  const avg = play.stats.reduce((sum, key) => sum + qb[key], 0) / play.stats.length;
+  return Math.min(play.max, Math.max(play.min, (avg - play.floor) / play.range));
+}
+
+function clutchSituation() {
+  const dist = 1 + Math.floor(Math.random() * 8);
+  const yard = 12 + Math.floor(Math.random() * 30);
+  const deficits = ['Tied game', 'Down by 1', 'Down by 3', 'Down by 4', 'Down by 6'];
+  const deficit = deficits[Math.floor(Math.random() * deficits.length)];
+  const secs = 8 + Math.floor(Math.random() * 90);
+  const clock = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
+  return `4th & ${dist} at the opponent's ${yard}-yard line · ${deficit} · ${clock} left`;
+}
+
+function showClutchMoment(game, done) {
+  clutchSituationEl.textContent = clutchSituation();
+  clutchOutcome.textContent = '';
+  clutchOutcome.className = 'clutch-outcome';
+  clutchPlays.innerHTML = '';
+
+  CLUTCH_PLAYS.forEach((play) => {
+    const chance = clutchChance(play);
+    const statNames = play.stats
+      .map((key) => STATS.find((s) => s.key === key).label)
+      .join(' + ');
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'clutch-play-btn';
+    btn.innerHTML = `
+      <span class="clutch-play-main">
+        <span class="clutch-play-name">${play.name}</span>
+        <span class="clutch-play-desc">${play.desc}</span>
+      </span>
+      <span class="clutch-play-odds">${Math.round(chance * 100)}%<small>${statNames}</small></span>
+    `;
+    btn.addEventListener('click', () => resolveClutch(play, chance, game, done));
+    clutchPlays.appendChild(btn);
+  });
+
+  clutchMoment.classList.remove('hidden');
+}
+
+function resolveClutch(play, chance, game, done) {
+  clutchPlays.querySelectorAll('button').forEach((b) => { b.disabled = true; });
+  clutchOutcome.textContent = 'The snap is up...';
+
+  setTimeout(() => {
+    const success = Math.random() < chance;
+    game.win = success;
+    clutchOutcome.textContent = success ? play.success : play.fail;
+    clutchOutcome.classList.add(success ? 'win' : 'loss');
+
+    setTimeout(() => {
+      clutchMoment.classList.add('hidden');
+      done();
+    }, 1200);
+  }, 900);
 }
 
 function determinePlayoffs(wins) {
@@ -408,6 +512,7 @@ function resetGame() {
   teamCard.classList.add('hidden');
   seasonSim.classList.add('hidden');
   seasonResult.classList.add('hidden');
+  clutchMoment.classList.add('hidden');
   playoffState.classList.add('hidden');
   playoffResult.classList.add('hidden');
   teamBtn.classList.remove('hidden');
@@ -481,44 +586,53 @@ teamBtn.addEventListener('click', () => {
     seasonSim.classList.remove('hidden');
 
     const teamOverall = (qbOverall() + team.rating) / 2;
-    const { wins, losses, log } = simulateSeason(teamOverall);
+    const log = simulateSeason(teamOverall);
+
+    function revealResult(i) {
+      const game = log[i];
+      const win = game.win;
+      const { you, opp } = generateScore(win, game.pivotal);
+      scoreYou.textContent = you;
+      scoreOpp.textContent = opp;
+      scoreYou.classList.remove('pop');
+      scoreOpp.classList.remove('pop');
+      void scoreYou.offsetWidth;
+      scoreYou.classList.add('pop');
+      scoreOpp.classList.add('pop');
+
+      simFlash.textContent = win ? 'WIN' : 'LOSS';
+      simFlash.className = 'sim-flash show ' + (win ? 'win' : 'loss');
+      setTimeout(() => simFlash.classList.remove('show'), 300);
+
+      dots[i].classList.remove('active');
+      dots[i].classList.add(win ? 'win' : 'loss');
+
+      const winsSoFar = log.slice(0, i + 1).filter((g) => g.win).length;
+      const lossesSoFar = i + 1 - winsSoFar;
+      simTally.textContent = `Wins: ${winsSoFar}  Losses: ${lossesSoFar}`;
+
+      setTimeout(() => runWeek(i + 1), 240);
+    }
 
     function runWeek(i) {
       if (i >= log.length) {
+        const wins = log.filter((g) => g.win).length;
         setTimeout(() => {
           seasonSim.classList.add('hidden');
-          showSeasonResult(team, wins, losses);
+          showSeasonResult(team, wins, log.length - wins);
         }, 500);
         return;
       }
 
-      const { week, win } = log[i];
-      simWeek.textContent = `WEEK ${week} / 17`;
+      const game = log[i];
+      simWeek.textContent = `WEEK ${game.week} / 17`;
       dots[i].classList.add('active');
 
-      setTimeout(() => {
-        const { you, opp } = generateScore(win);
-        scoreYou.textContent = you;
-        scoreOpp.textContent = opp;
-        scoreYou.classList.remove('pop');
-        scoreOpp.classList.remove('pop');
-        void scoreYou.offsetWidth;
-        scoreYou.classList.add('pop');
-        scoreOpp.classList.add('pop');
-
-        simFlash.textContent = win ? 'WIN' : 'LOSS';
-        simFlash.className = 'sim-flash show ' + (win ? 'win' : 'loss');
-        setTimeout(() => simFlash.classList.remove('show'), 300);
-
-        dots[i].classList.remove('active');
-        dots[i].classList.add(win ? 'win' : 'loss');
-
-        const winsSoFar = log.slice(0, i + 1).filter((g) => g.win).length;
-        const lossesSoFar = i + 1 - winsSoFar;
-        simTally.textContent = `Wins: ${winsSoFar}  Losses: ${lossesSoFar}`;
-
-        setTimeout(() => runWeek(i + 1), 240);
-      }, 260);
+      if (game.pivotal) {
+        setTimeout(() => showClutchMoment(game, () => revealResult(i)), 350);
+      } else {
+        setTimeout(() => revealResult(i), 260);
+      }
     }
 
     runWeek(0);

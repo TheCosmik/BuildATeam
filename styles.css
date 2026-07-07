@@ -557,6 +557,133 @@ html, body {
 .sim-flash.win { color: #6be26b; }
 .sim-flash.loss { color: #ff6b6b; }
 
+.clutch-moment {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 16px;
+  background: rgba(255, 209, 102, 0.05);
+  border: 1px solid rgba(255, 209, 102, 0.5);
+  border-radius: 14px;
+  box-shadow: 0 0 26px rgba(255, 209, 102, 0.18);
+  animation: clutchIn 0.3s ease;
+}
+
+@keyframes clutchIn {
+  from { transform: scale(0.92); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+.clutch-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: #ffd166;
+  animation: clutchPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes clutchPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+
+.clutch-situation {
+  margin: 0;
+  font-size: 13px;
+  text-align: center;
+  color: rgba(238, 247, 238, 0.85);
+}
+
+.clutch-plays {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.clutch-play-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 209, 102, 0.3);
+  border-radius: 10px;
+  color: #eef7ee;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+.clutch-play-btn:hover:not(:disabled) {
+  background: rgba(255, 209, 102, 0.12);
+  border-color: rgba(255, 209, 102, 0.7);
+}
+
+.clutch-play-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.clutch-play-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.clutch-play-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.clutch-play-name {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.clutch-play-desc {
+  font-size: 12px;
+  color: rgba(238, 247, 238, 0.55);
+}
+
+.clutch-play-odds {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #ffd166;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.clutch-play-odds small {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(238, 247, 238, 0.5);
+}
+
+.clutch-outcome {
+  margin: 0;
+  min-height: 20px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-align: center;
+  color: rgba(238, 247, 238, 0.7);
+}
+
+.clutch-outcome.win { color: #6be26b; }
+.clutch-outcome.loss { color: #ff6b6b; }
+
 .week-tracker {
   width: 100%;
   display: flex;

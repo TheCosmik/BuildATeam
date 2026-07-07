@@ -132,6 +132,9 @@ function updateAuthUI() {
     authSignedIn.classList.remove('hidden');
     const user = window.Clerk.user;
     authUsername.textContent = user.username || user.firstName || 'Player';
+    // Matches the username fallback character-save.js uses server-side,
+    // so the link always resolves even for email-only accounts.
+    authUsername.href = `profile.html?username=${encodeURIComponent(user.username || user.id)}`;
   } else {
     authSignInBtn.classList.remove('hidden');
     authSignedIn.classList.add('hidden');
@@ -305,6 +308,29 @@ const playoffRetryBtn = document.getElementById('playoff-retry-btn');
 
 let currentTeam = null;
 let currentSeed = null;
+let currentSeasonWins = null;
+let currentSeasonLosses = null;
+
+async function postSeasonResult(team, wins, losses, qualified, finish) {
+  if (!isSignedIn()) return;
+  try {
+    await authedFetch('/api/season-result', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        teamAbbr: team.abbr,
+        teamName: team.name,
+        teamColor: team.color,
+        wins,
+        losses,
+        qualified,
+        finish
+      })
+    });
+  } catch (error) {
+    console.error('Failed to save season result', error);
+  }
+}
 
 function teamLogoUrl(abbr) {
   const slug = abbr === 'WAS' ? 'wsh' : abbr.toLowerCase();
@@ -522,6 +548,8 @@ function resetGame() {
   weekTracker.innerHTML = '';
   currentTeam = null;
   currentSeed = null;
+  currentSeasonWins = null;
+  currentSeasonLosses = null;
 
   idleState.classList.remove('hidden');
 }
@@ -649,10 +677,13 @@ function showSeasonResult(team, wins, losses) {
     retryBtn.classList.add('hidden');
     currentTeam = team;
     currentSeed = seed;
+    currentSeasonWins = wins;
+    currentSeasonLosses = losses;
   } else {
     resultMsg.textContent = `${team.name} missed the playoffs.`;
     continueBtn.classList.add('hidden');
     retryBtn.classList.remove('hidden');
+    postSeasonResult(team, wins, losses, false, 'Missed Playoffs');
   }
 
   seasonResult.classList.remove('hidden');
@@ -751,17 +782,17 @@ function showPlayoffFinal(champion, team, opponent, yourScore, oppScore, lostRou
   playoffState.classList.add('hidden');
   playoffResult.classList.remove('hidden');
 
+  const finish = champion
+    ? 'Super Bowl Champion'
+    : (lostRound === 'Super Bowl' ? 'Lost Super Bowl' : `Lost ${lostRound}`);
+
   if (champion) {
     playoffResultMsg.textContent = `\u{1F3C6} ${team.name} are Super Bowl Champions! (${yourScore}-${oppScore} in the Super Bowl)`;
-    if (isSignedIn()) {
-      authedFetch('/api/superbowl-win', { method: 'POST' }).catch((error) => {
-        console.error('Failed to record Super Bowl win', error);
-      });
-    }
   } else {
     playoffResultMsg.textContent = `${team.name} were eliminated in the ${lostRound} (lost ${yourScore}-${oppScore} to ${opponent.name}).`;
   }
 
+  postSeasonResult(team, currentSeasonWins, currentSeasonLosses, true, finish);
   playoffRetryBtn.classList.remove('hidden');
 }
 

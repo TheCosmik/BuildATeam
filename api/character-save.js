@@ -25,15 +25,17 @@ module.exports = async function handler(req, res) {
 
     const clerkUser = await clerkClient.users.getUser(userId);
     const username = clerkUser.username || clerkUser.id;
+    const imageUrl = clerkUser.imageUrl || null;
 
     await sql`
-      INSERT INTO characters (user_id, username, character_name, stats, stat_sources, updated_at)
-      VALUES (${userId}, ${username}, ${characterName}, ${JSON.stringify(stats)}, ${JSON.stringify(statSources)}, now())
+      INSERT INTO characters (user_id, username, character_name, stats, stat_sources, image_url, updated_at)
+      VALUES (${userId}, ${username}, ${characterName}, ${JSON.stringify(stats)}, ${JSON.stringify(statSources)}, ${imageUrl}, now())
       ON CONFLICT (user_id) DO UPDATE SET
         username = EXCLUDED.username,
         character_name = EXCLUDED.character_name,
         stats = EXCLUDED.stats,
         stat_sources = EXCLUDED.stat_sources,
+        image_url = EXCLUDED.image_url,
         updated_at = now()
     `;
 

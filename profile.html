@@ -5,9 +5,31 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Player Profile</title>
 <link rel="stylesheet" href="styles.css">
+<script
+  async
+  crossorigin="anonymous"
+  data-clerk-publishable-key="pk_test_Y29vbC1ncnViLTgwLmNsZXJrLmFjY291bnRzLmRldiQ"
+  onload="window.__clerkLoaded && window.__clerkLoaded()"
+  src="https://cool-grub-80.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+  type="text/javascript"
+></script>
 </head>
 <body>
   <div class="field-bg"></div>
+
+  <div id="clerk-auth" class="clerk-auth">
+    <button id="auth-signin-btn" class="btn secondary auth-btn hidden">Sign In</button>
+    <div id="account-menu" class="account-menu hidden">
+      <button id="account-menu-btn" type="button" class="account-menu-btn">
+        <img id="account-avatar" class="account-avatar" src="" alt="">
+        <span id="account-name" class="account-name">Player</span>
+      </button>
+      <div id="account-dropdown" class="account-dropdown hidden">
+        <a id="account-profile-link" href="#" class="account-dropdown-item">My Profile</a>
+        <button id="account-signout-btn" type="button" class="account-dropdown-item account-dropdown-btn">Sign Out</button>
+      </div>
+    </div>
+  </div>
 
   <main class="wrap">
     <a href="index.html" class="back-link">&larr; Back to Build-A-QB</a>
@@ -23,6 +45,7 @@
     </section>
   </main>
 
+  <script src="account-menu.js"></script>
   <script src="profile.js"></script>
 </body>
 </html>

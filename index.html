@@ -19,9 +19,15 @@
 
   <div id="clerk-auth" class="clerk-auth">
     <button id="auth-signin-btn" class="btn secondary auth-btn hidden">Sign In</button>
-    <div id="auth-signed-in" class="auth-signed-in hidden">
-      <a id="auth-username" class="auth-username" href="#"></a>
-      <button id="auth-signout-btn" class="btn secondary auth-btn">Sign Out</button>
+    <div id="account-menu" class="account-menu hidden">
+      <button id="account-menu-btn" type="button" class="account-menu-btn">
+        <img id="account-avatar" class="account-avatar" src="" alt="">
+        <span id="account-name" class="account-name">Player</span>
+      </button>
+      <div id="account-dropdown" class="account-dropdown hidden">
+        <a id="account-profile-link" href="#" class="account-dropdown-item">My Profile</a>
+        <button id="account-signout-btn" type="button" class="account-dropdown-item account-dropdown-btn">Sign Out</button>
+      </div>
     </div>
   </div>
 
@@ -141,6 +147,7 @@
     </section>
   </main>
 
+  <script src="account-menu.js"></script>
   <script src="players.js"></script>
   <script src="teams.js"></script>
   <script src="app.js"></script>

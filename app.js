@@ -64,51 +64,6 @@ const playerTeam = document.getElementById('player-team');
 const playerBio = document.getElementById('player-bio');
 const playerStats = document.getElementById('player-stats');
 
-const authSignInBtn = document.getElementById('auth-signin-btn');
-const authSignedIn = document.getElementById('auth-signed-in');
-const authUsername = document.getElementById('auth-username');
-const authSignOutBtn = document.getElementById('auth-signout-btn');
-
-function isSignedIn() {
-  return Boolean(window.Clerk && window.Clerk.user);
-}
-
-function updateAuthUI() {
-  if (isSignedIn()) {
-    authSignInBtn.classList.add('hidden');
-    authSignedIn.classList.remove('hidden');
-    const user = window.Clerk.user;
-    authUsername.textContent = user.username || user.firstName || 'Player';
-    // Matches the username fallback character-save.js uses server-side,
-    // so the link always resolves even for email-only accounts.
-    authUsername.href = `profile.html?username=${encodeURIComponent(user.username || user.id)}`;
-  } else {
-    authSignInBtn.classList.remove('hidden');
-    authSignedIn.classList.add('hidden');
-  }
-}
-
-authSignInBtn.addEventListener('click', () => {
-  window.Clerk.openSignIn({});
-});
-
-authSignOutBtn.addEventListener('click', () => {
-  window.Clerk.signOut().then(() => window.location.reload());
-});
-
-function initClerk() {
-  window.Clerk.load().then(() => {
-    updateAuthUI();
-    window.Clerk.addListener(() => updateAuthUI());
-  });
-}
-
-if (window.Clerk) {
-  initClerk();
-} else {
-  window.__clerkLoaded = initClerk;
-}
-
 function renderStatBoard() {
   let callouts = '';
   let labels = '';

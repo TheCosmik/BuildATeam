@@ -86,11 +86,6 @@ const hubInventoryBoostStatus = document.getElementById('hub-inventory-boost-sta
 const hubInventoryItems = document.getElementById('hub-inventory-items');
 const hubInventoryEmpty = document.getElementById('hub-inventory-empty');
 
-const authSignInBtn = document.getElementById('auth-signin-btn');
-const authSignedIn = document.getElementById('auth-signed-in');
-const authUsername = document.getElementById('auth-username');
-const authSignOutBtn = document.getElementById('auth-signout-btn');
-
 function isSignedIn() {
   return Boolean(window.Clerk && window.Clerk.user);
 }
@@ -129,24 +124,7 @@ function pauseTraining() {
   }
 }
 
-function updateAuthUI() {
-  if (isSignedIn()) {
-    authSignInBtn.classList.add('hidden');
-    authSignedIn.classList.remove('hidden');
-    const user = window.Clerk.user;
-    authUsername.textContent = user.username || user.firstName || 'Player';
-    authUsername.href = `profile.html?username=${encodeURIComponent(user.username || user.id)}`;
-  } else {
-    authSignInBtn.classList.remove('hidden');
-    authSignedIn.classList.add('hidden');
-  }
-}
-
-authSignInBtn.addEventListener('click', () => window.Clerk.openSignIn({}));
 careerSigninBtn.addEventListener('click', () => window.Clerk.openSignIn({}));
-authSignOutBtn.addEventListener('click', () => {
-  window.Clerk.signOut().then(() => window.location.reload());
-});
 
 function hideAllGates() {
   careerSignin.classList.add('hidden');
@@ -217,19 +195,10 @@ async function loadCareer() {
   }
 }
 
-function initClerk() {
-  window.Clerk.load().then(() => {
-    updateAuthUI();
-    window.Clerk.addListener(() => updateAuthUI());
-    loadCareer();
-  });
-}
-
-if (window.Clerk) {
-  initClerk();
-} else {
-  window.__clerkLoaded = initClerk;
-}
+window.onClerkReady(() => {
+  loadCareer();
+  window.Clerk.addListener(() => loadCareer());
+});
 
 // Training only accrues while the player is actually here. Leaving the
 // page (hiding the tab, navigating away, or closing it) pauses the clock;
@@ -429,6 +398,7 @@ async function selectTeam(team) {
     if (!res.ok) throw new Error('Failed to save career');
     hideAllGates();
     await loadCareer();
+    if (window.refreshAccountMenu) window.refreshAccountMenu();
   } catch (error) {
     careerTeamGrid.querySelectorAll('button').forEach((b) => { b.disabled = false; });
   }

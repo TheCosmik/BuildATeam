@@ -10,6 +10,23 @@ module.exports = async function handler(req, res) {
       return;
     }
 
+    // Lightweight path for the account-menu widget (shown on every page) -
+    // just the name/avatar for display. Deliberately skips flushProgress
+    // and the resume-on-view logic below: those must only run when the
+    // career page itself is actually being viewed (it's the only page with
+    // the pause-on-leave listeners), otherwise merely visiting some other
+    // page like Quick Play would silently resume a paused training clock
+    // with nothing around to pause it again.
+    if (req.query.summary === '1') {
+      const summaryRows = await sql`
+        SELECT character_name, image_url, custom_avatar_url
+        FROM characters
+        WHERE user_id = ${userId}
+      `;
+      res.status(200).json({ character: summaryRows[0] || null });
+      return;
+    }
+
     const rows = await sql`
       SELECT character_name, stats, stat_sources, image_url, custom_avatar_url, team_abbr, team_name, team_color,
              seasons_played, career_wins, career_losses, playoff_appearances, superbowl_wins, best_finish,

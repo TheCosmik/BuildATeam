@@ -77,6 +77,7 @@ const careerTeamGrid = document.getElementById('career-team-grid');
 
 const careerHub = document.getElementById('career-hub');
 const careerSideTabs = document.querySelectorAll('.career-side-tab');
+const careerGymPanel = document.getElementById('career-gym-panel');
 const careerProfilePanel = document.getElementById('career-profile-panel');
 const careerShopPanel = document.getElementById('career-shop-panel');
 const careerInventoryPanel = document.getElementById('career-inventory-panel');
@@ -139,6 +140,7 @@ function switchHubTab(tabName) {
   careerSideTabs.forEach((btn) => {
     btn.classList.toggle('active', btn.getAttribute('data-hub-tab') === tabName);
   });
+  careerGymPanel.classList.toggle('hidden', tabName !== 'gym');
   careerProfilePanel.classList.toggle('hidden', tabName !== 'profile');
   careerShopPanel.classList.toggle('hidden', tabName !== 'shop');
   careerInventoryPanel.classList.toggle('hidden', tabName !== 'inventory');
@@ -185,8 +187,9 @@ async function loadCareer() {
     }
 
     hideAllGates();
-    renderCareerProfile(data.character, data.xpNeededForCurrentPoint, data.xpBanked);
-    switchHubTab('profile');
+    renderCareerProfile(data.character);
+    renderGymPanel(data.character, data.xpNeededForCurrentPoint, data.xpBanked);
+    switchHubTab('gym');
     careerHub.classList.remove('hidden');
   } catch (error) {
     hideAllGates();
@@ -449,9 +452,7 @@ function activeDrinkBoostHtml(character) {
   return `<p class="career-drink-boost-active">&#9889; +${character.active_boost_percent}% from a QB XP Boost — ${remainingMin}m left</p>`;
 }
 
-function renderCareerProfile(character, xpNeededForCurrentPoint, xpBanked) {
-  if (trainingTickHandle) clearInterval(trainingTickHandle);
-
+function renderCareerProfile(character) {
   const stats = character.stats || {};
   const overall = Math.round(STATS.reduce((sum, { key }) => sum + stats[key], 0) / STATS.length);
   const tier = overallTier(overall);
@@ -485,27 +486,6 @@ function renderCareerProfile(character, xpNeededForCurrentPoint, xpBanked) {
     `
     : '';
 
-  const statRows = STATS.map(({ key, label }) => {
-    const isTraining = character.training_stat === key;
-    const isMaxed = stats[key] >= 99;
-    const action = isTraining
-      ? `<span class="career-train-status">Training</span>`
-      : isMaxed
-        ? `<span class="career-train-status career-train-maxed">Maxed</span>`
-        : `<button type="button" class="career-train-btn" data-train="${key}">Workout</button>`;
-    const xpBar = isTraining ? xpBarHtml(character.training_started_at, xpNeededForCurrentPoint, xpBanked) : '';
-
-    return `
-      <div class="profile-stat-row career-stat-row${isTraining ? ' training' : ''}">
-        <span class="profile-stat-label">${label}</span>
-        <div class="profile-stat-bar"><div class="profile-stat-fill" style="width: ${stats[key]}%"></div></div>
-        <span class="profile-stat-value">${stats[key]}</span>
-        ${action}
-      </div>
-      ${xpBar}
-    `;
-  }).join('');
-
   const record = `${character.career_wins || 0}-${character.career_losses || 0}`;
   const trophies = character.superbowl_wins > 0
     ? '\u{1F3C6}'.repeat(Math.min(character.superbowl_wins, 5)) + (character.superbowl_wins > 5 ? ` +${character.superbowl_wins - 5}` : '')
@@ -523,15 +503,6 @@ function renderCareerProfile(character, xpNeededForCurrentPoint, xpBanked) {
         <span class="profile-overall-value">${overall}</span>
         <span class="profile-overall-label">${tier.label} QB</span>
       </div>
-    </div>
-
-    <div class="profile-stats-block">
-      <div class="career-stats-head">
-        <p class="profile-section-label">QB Ratings &mdash; Workout a stat to train it up over time</p>
-        <button type="button" id="career-refresh-btn" class="btn secondary career-refresh-btn">Check Progress</button>
-      </div>
-      ${activeDrinkBoostHtml(character)}
-      ${statRows}
     </div>
 
     <div class="profile-career-grid">
@@ -556,13 +527,6 @@ function renderCareerProfile(character, xpNeededForCurrentPoint, xpBanked) {
     <p class="profile-best-finish">Best Finish: <strong>${character.best_finish || 'Not yet determined'}</strong></p>
   `;
 
-  careerProfilePanel.querySelectorAll('[data-train]').forEach((btn) => {
-    btn.addEventListener('click', () => startTraining(btn.getAttribute('data-train')));
-  });
-
-  const refreshBtn = document.getElementById('career-refresh-btn');
-  if (refreshBtn) refreshBtn.addEventListener('click', () => loadCareer());
-
   const avatarEditBtn = document.getElementById('profile-avatar-edit-btn');
   const avatarForm = document.getElementById('profile-avatar-form');
   const avatarInput = document.getElementById('profile-avatar-input');
@@ -582,13 +546,58 @@ function renderCareerProfile(character, xpNeededForCurrentPoint, xpBanked) {
   if (avatarSaveBtn) {
     avatarSaveBtn.addEventListener('click', () => saveAvatarUrl(avatarInput.value.trim()));
   }
+}
+
+function renderGymPanel(character, xpNeededForCurrentPoint, xpBanked) {
+  if (trainingTickHandle) clearInterval(trainingTickHandle);
+
+  const stats = character.stats || {};
+
+  const statRows = STATS.map(({ key, label }) => {
+    const isTraining = character.training_stat === key;
+    const isMaxed = stats[key] >= 99;
+    const action = isTraining
+      ? `<span class="career-train-status">Training</span>`
+      : isMaxed
+        ? `<span class="career-train-status career-train-maxed">Maxed</span>`
+        : `<button type="button" class="career-train-btn" data-train="${key}">Workout</button>`;
+    const xpBar = isTraining ? xpBarHtml(character.training_started_at, xpNeededForCurrentPoint, xpBanked) : '';
+
+    return `
+      <div class="profile-stat-row career-stat-row${isTraining ? ' training' : ''}">
+        <span class="profile-stat-label">${label}</span>
+        <div class="profile-stat-bar"><div class="profile-stat-fill" style="width: ${stats[key]}%"></div></div>
+        <span class="profile-stat-value">${stats[key]}</span>
+        ${action}
+      </div>
+      ${xpBar}
+    `;
+  }).join('');
+
+  careerGymPanel.innerHTML = `
+    <div class="profile-stats-block">
+      <div class="career-stats-head">
+        <p class="profile-section-label">QB Ratings &mdash; Workout a stat to train it up over time</p>
+        <button type="button" id="career-refresh-btn" class="btn secondary career-refresh-btn">Check Progress</button>
+      </div>
+      ${activeDrinkBoostHtml(character)}
+      ${statRows}
+    </div>
+  `;
+
+  careerGymPanel.querySelectorAll('[data-train]').forEach((btn) => {
+    btn.addEventListener('click', () => startTraining(btn.getAttribute('data-train')));
+  });
+
+  const refreshBtn = document.getElementById('career-refresh-btn');
+  if (refreshBtn) refreshBtn.addEventListener('click', () => loadCareer());
 
   if (character.training_stat) {
     trainingTickHandle = setInterval(() => {
       const { xp, percent, ready } = xpProgress(character.training_started_at, xpNeededForCurrentPoint, xpBanked);
-      const fill = careerProfilePanel.querySelector('[data-xp-fill]');
-      const label = careerProfilePanel.querySelector('[data-xp-label]');
-      const wrap = careerProfilePanel.querySelector('[data-xp-bar]');
+      const fill = careerGymPanel.querySelector('[data-xp-fill]');
+      const label = careerGymPanel.querySelector('[data-xp-label]');
+      const wrap = careerGymPanel.querySelector('[data-xp-bar]');
       if (fill) fill.style.width = `${percent}%`;
       if (label) label.textContent = ready ? 'Point ready — hit Check Progress to claim!' : `${xp.toLocaleString()} / ${xpNeededForCurrentPoint.toLocaleString()} XP`;
       if (wrap) wrap.classList.toggle('ready', ready);
@@ -783,16 +792,18 @@ async function drinkItemHub(itemId) {
   }
 }
 
-// Re-fetches and re-renders just the Profile panel's data, without
+// Re-fetches and re-renders the Gym + Profile panels' data, without
 // touching which hub tab is currently visible - used after drinking a
-// boost so it's already reflected if the player switches back to Profile.
+// boost so it's already reflected (the boost banner + XP bar live in
+// Gym) if the player switches back over there.
 async function refreshProfilePanel() {
   try {
     const res = await authedFetch('/api/career-get');
     if (!res.ok) return;
     const data = await res.json();
     if (data.character && data.character.team_abbr) {
-      renderCareerProfile(data.character, data.xpNeededForCurrentPoint, data.xpBanked);
+      renderCareerProfile(data.character);
+      renderGymPanel(data.character, data.xpNeededForCurrentPoint, data.xpBanked);
     }
   } catch (error) {
     // Non-critical - the profile will pick up the fresh state next full load.

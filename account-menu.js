@@ -38,7 +38,9 @@
   async function fetchCareerSummary() {
     try {
       const token = await window.Clerk.session.getToken();
-      const res = await fetch('/api/career-get', { headers: { Authorization: `Bearer ${token}` } });
+      // ?summary=1 is a read-only lookup with no side effects - it must
+      // never touch the training clock (see career-get.js for why).
+      const res = await fetch('/api/career-get?summary=1', { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) return null;
       const data = await res.json();
       return data.character || null;

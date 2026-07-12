@@ -1,6 +1,6 @@
 const { sql } = require('../lib/db');
 const { requireUserId } = require('../lib/clerk-verify');
-const { flushTraining, TRAIN_MINUTES_PER_POINT } = require('../lib/training');
+const { flushTraining, XP_PER_POINT } = require('../lib/training');
 
 const VALID_STATS = ['strength', 'arm', 'speed', 'build', 'accuracy', 'awareness'];
 
@@ -50,7 +50,7 @@ module.exports = async function handler(req, res) {
       stats: flushed.stats,
       trainingStat: stat,
       trainingStartedAt: now,
-      trainMinutesPerPoint: TRAIN_MINUTES_PER_POINT
+      xpPerPoint: XP_PER_POINT
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

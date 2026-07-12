@@ -158,7 +158,7 @@ async function loadCareer() {
     }
 
     hideAllGates();
-    renderCareerProfile(data.character, data.trainMinutesPerPoint);
+    renderCareerProfile(data.character, data.xpPerPoint);
     careerProfile.classList.remove('hidden');
   } catch (error) {
     hideAllGates();
@@ -382,21 +382,29 @@ function overallTier(overall) {
 
 let trainingTickHandle = null;
 
-function trainingCountdownText(trainingStartedAt, trainMinutesPerPoint) {
-  const elapsedMs = Date.now() - new Date(trainingStartedAt).getTime();
-  const elapsedMinutes = elapsedMs / 60000;
-  const remaining = trainMinutesPerPoint - (elapsedMinutes % trainMinutesPerPoint);
-
-  if (elapsedMinutes >= trainMinutesPerPoint) {
-    return 'Gains ready — hit refresh to claim!';
-  }
-  if (remaining >= 60) {
-    return `Next point in ${(remaining / 60).toFixed(1)}h`;
-  }
-  return `Next point in ${Math.ceil(remaining)}m`;
+function xpProgress(trainingStartedAt, xpPerPoint) {
+  const elapsedSeconds = Math.floor((Date.now() - new Date(trainingStartedAt).getTime()) / 1000);
+  const xp = Math.max(0, Math.min(elapsedSeconds, xpPerPoint));
+  const percent = (xp / xpPerPoint) * 100;
+  const ready = elapsedSeconds >= xpPerPoint;
+  return { xp, percent, ready };
 }
 
-function renderCareerProfile(character, trainMinutesPerPoint) {
+function xpBarHtml(trainingStartedAt, xpPerPoint) {
+  const { xp, percent, ready } = xpProgress(trainingStartedAt, xpPerPoint);
+  const label = ready
+    ? 'Point ready — hit Check Progress to claim!'
+    : `${xp.toLocaleString()} / ${xpPerPoint.toLocaleString()} XP`;
+
+  return `
+    <div class="career-xp-bar-wrap${ready ? ' ready' : ''}" data-xp-bar>
+      <div class="career-xp-bar"><div class="career-xp-fill" data-xp-fill style="width: ${percent}%"></div></div>
+      <span class="career-xp-label" data-xp-label>${label}</span>
+    </div>
+  `;
+}
+
+function renderCareerProfile(character, xpPerPoint) {
   if (trainingTickHandle) clearInterval(trainingTickHandle);
 
   const stats = character.stats || {};
@@ -419,8 +427,9 @@ function renderCareerProfile(character, trainMinutesPerPoint) {
   const statRows = STATS.map(({ key, label }) => {
     const isTraining = character.training_stat === key;
     const action = isTraining
-      ? `<span class="career-train-status" data-training-label>${trainingCountdownText(character.training_started_at, trainMinutesPerPoint)}</span>`
+      ? `<span class="career-train-status">Training</span>`
       : `<button type="button" class="career-train-btn" data-train="${key}">Workout</button>`;
+    const xpBar = isTraining ? xpBarHtml(character.training_started_at, xpPerPoint) : '';
 
     return `
       <div class="profile-stat-row career-stat-row${isTraining ? ' training' : ''}">
@@ -429,6 +438,7 @@ function renderCareerProfile(character, trainMinutesPerPoint) {
         <span class="profile-stat-value">${stats[key]}</span>
         ${action}
       </div>
+      ${xpBar}
     `;
   }).join('');
 
@@ -490,9 +500,14 @@ function renderCareerProfile(character, trainMinutesPerPoint) {
 
   if (character.training_stat) {
     trainingTickHandle = setInterval(() => {
-      const label = careerProfile.querySelector('[data-training-label]');
-      if (label) label.textContent = trainingCountdownText(character.training_started_at, trainMinutesPerPoint);
-    }, 30000);
+      const { xp, percent, ready } = xpProgress(character.training_started_at, xpPerPoint);
+      const fill = careerProfile.querySelector('[data-xp-fill]');
+      const label = careerProfile.querySelector('[data-xp-label]');
+      const wrap = careerProfile.querySelector('[data-xp-bar]');
+      if (fill) fill.style.width = `${percent}%`;
+      if (label) label.textContent = ready ? 'Point ready — hit Check Progress to claim!' : `${xp.toLocaleString()} / ${xpPerPoint.toLocaleString()} XP`;
+      if (wrap) wrap.classList.toggle('ready', ready);
+    }, 1000);
   }
 }
 

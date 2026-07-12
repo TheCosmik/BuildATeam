@@ -158,7 +158,7 @@ async function loadCareer() {
     }
 
     hideAllGates();
-    renderCareerProfile(data.character, data.xpPerPoint);
+    renderCareerProfile(data.character, data.xpNeededForCurrentPoint, data.upgradeTiers);
     careerProfile.classList.remove('hidden');
   } catch (error) {
     hideAllGates();
@@ -382,19 +382,19 @@ function overallTier(overall) {
 
 let trainingTickHandle = null;
 
-function xpProgress(trainingStartedAt, xpPerPoint) {
+function xpProgress(trainingStartedAt, xpNeeded) {
   const elapsedSeconds = Math.floor((Date.now() - new Date(trainingStartedAt).getTime()) / 1000);
-  const xp = Math.max(0, Math.min(elapsedSeconds, xpPerPoint));
-  const percent = (xp / xpPerPoint) * 100;
-  const ready = elapsedSeconds >= xpPerPoint;
+  const xp = Math.max(0, Math.min(elapsedSeconds, xpNeeded));
+  const percent = (xp / xpNeeded) * 100;
+  const ready = elapsedSeconds >= xpNeeded;
   return { xp, percent, ready };
 }
 
-function xpBarHtml(trainingStartedAt, xpPerPoint) {
-  const { xp, percent, ready } = xpProgress(trainingStartedAt, xpPerPoint);
+function xpBarHtml(trainingStartedAt, xpNeeded) {
+  const { xp, percent, ready } = xpProgress(trainingStartedAt, xpNeeded);
   const label = ready
     ? 'Point ready — hit Check Progress to claim!'
-    : `${xp.toLocaleString()} / ${xpPerPoint.toLocaleString()} XP`;
+    : `${xp.toLocaleString()} / ${xpNeeded.toLocaleString()} XP`;
 
   return `
     <div class="career-xp-bar-wrap${ready ? ' ready' : ''}" data-xp-bar>
@@ -404,7 +404,40 @@ function xpBarHtml(trainingStartedAt, xpPerPoint) {
   `;
 }
 
-function renderCareerProfile(character, xpPerPoint) {
+function upgradeShopHtml(character, upgradeTiers) {
+  const currentTier = character.speed_upgrade_tier || 0;
+  const currentBoost = upgradeTiers
+    .filter((t) => t.tier <= currentTier)
+    .reduce((sum, t) => sum + t.boostPercent, 0);
+  const nextTierDef = upgradeTiers.find((t) => t.tier === currentTier + 1);
+
+  const nextTierHtml = nextTierDef
+    ? `
+      <div class="career-upgrade-next">
+        <div class="career-upgrade-info">
+          <span class="career-upgrade-name">${nextTierDef.label}</span>
+          <span class="career-upgrade-desc">+${nextTierDef.boostPercent}% training speed (total would be +${currentBoost + nextTierDef.boostPercent}%)</span>
+        </div>
+        <button type="button" id="career-upgrade-btn" class="btn primary career-upgrade-btn" ${character.training_points < nextTierDef.cost ? 'disabled' : ''}>
+          Buy — ${nextTierDef.cost} TP
+        </button>
+      </div>
+    `
+    : `<p class="career-upgrade-maxed">Training facility fully upgraded — max speed reached.</p>`;
+
+  return `
+    <div class="career-upgrade-shop">
+      <div class="career-stats-head">
+        <p class="profile-section-label">Training Facility${currentBoost > 0 ? ` — +${currentBoost}% speed active` : ''}</p>
+        <span class="career-points-balance">${character.training_points || 0} TP</span>
+      </div>
+      ${nextTierHtml}
+      <p class="career-upgrade-note">Training Points trickle in passively over time (1 per real hour) — spend them here for a permanent training-speed boost.</p>
+    </div>
+  `;
+}
+
+function renderCareerProfile(character, xpNeededForCurrentPoint, upgradeTiers) {
   if (trainingTickHandle) clearInterval(trainingTickHandle);
 
   const stats = character.stats || {};
@@ -426,10 +459,13 @@ function renderCareerProfile(character, xpPerPoint) {
 
   const statRows = STATS.map(({ key, label }) => {
     const isTraining = character.training_stat === key;
+    const isMaxed = stats[key] >= 99;
     const action = isTraining
       ? `<span class="career-train-status">Training</span>`
-      : `<button type="button" class="career-train-btn" data-train="${key}">Workout</button>`;
-    const xpBar = isTraining ? xpBarHtml(character.training_started_at, xpPerPoint) : '';
+      : isMaxed
+        ? `<span class="career-train-status career-train-maxed">Maxed</span>`
+        : `<button type="button" class="career-train-btn" data-train="${key}">Workout</button>`;
+    const xpBar = isTraining ? xpBarHtml(character.training_started_at, xpNeededForCurrentPoint) : '';
 
     return `
       <div class="profile-stat-row career-stat-row${isTraining ? ' training' : ''}">
@@ -469,6 +505,8 @@ function renderCareerProfile(character, xpPerPoint) {
       ${statRows}
     </div>
 
+    ${upgradeShopHtml(character, upgradeTiers)}
+
     <div class="profile-career-grid">
       <div class="profile-career-stat">
         <span class="profile-career-value">${character.seasons_played || 0}</span>
@@ -498,14 +536,17 @@ function renderCareerProfile(character, xpPerPoint) {
   const refreshBtn = document.getElementById('career-refresh-btn');
   if (refreshBtn) refreshBtn.addEventListener('click', () => loadCareer());
 
+  const upgradeBtn = document.getElementById('career-upgrade-btn');
+  if (upgradeBtn) upgradeBtn.addEventListener('click', () => buyUpgrade());
+
   if (character.training_stat) {
     trainingTickHandle = setInterval(() => {
-      const { xp, percent, ready } = xpProgress(character.training_started_at, xpPerPoint);
+      const { xp, percent, ready } = xpProgress(character.training_started_at, xpNeededForCurrentPoint);
       const fill = careerProfile.querySelector('[data-xp-fill]');
       const label = careerProfile.querySelector('[data-xp-label]');
       const wrap = careerProfile.querySelector('[data-xp-bar]');
       if (fill) fill.style.width = `${percent}%`;
-      if (label) label.textContent = ready ? 'Point ready — hit Check Progress to claim!' : `${xp.toLocaleString()} / ${xpPerPoint.toLocaleString()} XP`;
+      if (label) label.textContent = ready ? 'Point ready — hit Check Progress to claim!' : `${xp.toLocaleString()} / ${xpNeededForCurrentPoint.toLocaleString()} XP`;
       if (wrap) wrap.classList.toggle('ready', ready);
     }, 1000);
   }
@@ -519,6 +560,16 @@ async function startTraining(stat) {
       body: JSON.stringify({ stat })
     });
     if (!res.ok) throw new Error('Failed to start training');
+    await loadCareer();
+  } catch (error) {
+    // Leave the UI as-is; the user can just try again.
+  }
+}
+
+async function buyUpgrade() {
+  try {
+    const res = await authedFetch('/api/career-upgrade', { method: 'POST' });
+    if (!res.ok) throw new Error('Failed to buy upgrade');
     await loadCareer();
   } catch (error) {
     // Leave the UI as-is; the user can just try again.

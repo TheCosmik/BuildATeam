@@ -1,8 +1,6 @@
 const { sql } = require('../lib/db');
 const { requireUserId } = require('../lib/clerk-verify');
-const { flushProgress, xpCostForPoint, STAT_MAX } = require('../lib/training');
-
-const VALID_STATS = ['strength', 'arm', 'speed', 'build', 'accuracy', 'awareness'];
+const { flushProgress, UPGRADE_TIERS } = require('../lib/training');
 
 module.exports = async function handler(req, res) {
   try {
@@ -17,12 +15,6 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    const { stat } = req.body || {};
-    if (!VALID_STATS.includes(stat)) {
-      res.status(400).json({ error: 'Invalid stat' });
-      return;
-    }
-
     const rows = await sql`
       SELECT stats, training_stat, training_started_at, training_points, training_points_synced_at, speed_upgrade_tier
       FROM characters
@@ -34,30 +26,31 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    // Cash in any gains on the previously trained stat before switching.
     const flushed = await flushProgress(userId, rows[0]);
+    const currentTier = flushed.speed_upgrade_tier || 0;
+    const nextTierDef = UPGRADE_TIERS.find((t) => t.tier === currentTier + 1);
 
-    if (flushed.stats[stat] >= STAT_MAX) {
-      res.status(400).json({ error: 'Stat already maxed' });
+    if (!nextTierDef) {
+      res.status(400).json({ error: 'Already at max training tier' });
       return;
     }
 
-    const now = new Date().toISOString();
+    if (flushed.training_points < nextTierDef.cost) {
+      res.status(400).json({ error: 'Not enough Training Points' });
+      return;
+    }
+
+    const newPoints = flushed.training_points - nextTierDef.cost;
 
     await sql`
       UPDATE characters SET
-        training_stat = ${stat},
-        training_started_at = ${now},
+        training_points = ${newPoints},
+        speed_upgrade_tier = ${nextTierDef.tier},
         updated_at = now()
       WHERE user_id = ${userId}
     `;
 
-    res.status(200).json({
-      stats: flushed.stats,
-      trainingStat: stat,
-      trainingStartedAt: now,
-      xpNeededForCurrentPoint: xpCostForPoint(flushed.stats[stat], flushed.speed_upgrade_tier || 0)
-    });
+    res.status(200).json({ trainingPoints: newPoints, speedUpgradeTier: nextTierDef.tier });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

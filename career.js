@@ -189,7 +189,7 @@ async function loadCareer() {
     hideAllGates();
     renderCareerProfile(data.character);
     renderGymPanel(data.character, data.xpNeededForCurrentPoint, data.xpBanked);
-    switchHubTab('gym');
+    switchHubTab('profile');
     careerHub.classList.remove('hidden');
   } catch (error) {
     hideAllGates();

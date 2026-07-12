@@ -74,7 +74,17 @@ const careerNameForm = document.getElementById('career-name-form');
 const careerNameInput = document.getElementById('career-name-input');
 const careerTeamPicker = document.getElementById('career-team-picker');
 const careerTeamGrid = document.getElementById('career-team-grid');
-const careerProfile = document.getElementById('career-profile');
+
+const careerHub = document.getElementById('career-hub');
+const careerSideTabs = document.querySelectorAll('.career-side-tab');
+const careerProfilePanel = document.getElementById('career-profile-panel');
+const careerShopPanel = document.getElementById('career-shop-panel');
+const careerInventoryPanel = document.getElementById('career-inventory-panel');
+const hubShopBalance = document.getElementById('hub-shop-balance');
+const hubShopItems = document.getElementById('hub-shop-items');
+const hubInventoryBoostStatus = document.getElementById('hub-inventory-boost-status');
+const hubInventoryItems = document.getElementById('hub-inventory-items');
+const hubInventoryEmpty = document.getElementById('hub-inventory-empty');
 
 const authSignInBtn = document.getElementById('auth-signin-btn');
 const authSignedIn = document.getElementById('auth-signed-in');
@@ -144,8 +154,24 @@ function hideAllGates() {
   careerCreate.classList.add('hidden');
   careerBuilder.classList.add('hidden');
   careerTeamPicker.classList.add('hidden');
-  careerProfile.classList.add('hidden');
+  careerHub.classList.add('hidden');
 }
+
+function switchHubTab(tabName) {
+  careerSideTabs.forEach((btn) => {
+    btn.classList.toggle('active', btn.getAttribute('data-hub-tab') === tabName);
+  });
+  careerProfilePanel.classList.toggle('hidden', tabName !== 'profile');
+  careerShopPanel.classList.toggle('hidden', tabName !== 'shop');
+  careerInventoryPanel.classList.toggle('hidden', tabName !== 'inventory');
+
+  if (tabName === 'shop') loadShopPanel();
+  if (tabName === 'inventory') loadInventoryPanel();
+}
+
+careerSideTabs.forEach((btn) => {
+  btn.addEventListener('click', () => switchHubTab(btn.getAttribute('data-hub-tab')));
+});
 
 async function loadCareer() {
   hideAllGates();
@@ -182,7 +208,8 @@ async function loadCareer() {
 
     hideAllGates();
     renderCareerProfile(data.character, data.xpNeededForCurrentPoint, data.xpBanked);
-    careerProfile.classList.remove('hidden');
+    switchHubTab('profile');
+    careerHub.classList.remove('hidden');
   } catch (error) {
     hideAllGates();
     careerLoading.classList.remove('hidden');
@@ -498,7 +525,7 @@ function renderCareerProfile(character, xpNeededForCurrentPoint, xpBanked) {
     ? '\u{1F3C6}'.repeat(Math.min(character.superbowl_wins, 5)) + (character.superbowl_wins > 5 ? ` +${character.superbowl_wins - 5}` : '')
     : '—';
 
-  careerProfile.innerHTML = `
+  careerProfilePanel.innerHTML = `
     <div class="profile-header">
       ${avatar}
       <div class="profile-header-info">
@@ -543,7 +570,7 @@ function renderCareerProfile(character, xpNeededForCurrentPoint, xpBanked) {
     <p class="profile-best-finish">Best Finish: <strong>${character.best_finish || 'Not yet determined'}</strong></p>
   `;
 
-  careerProfile.querySelectorAll('[data-train]').forEach((btn) => {
+  careerProfilePanel.querySelectorAll('[data-train]').forEach((btn) => {
     btn.addEventListener('click', () => startTraining(btn.getAttribute('data-train')));
   });
 
@@ -553,9 +580,9 @@ function renderCareerProfile(character, xpNeededForCurrentPoint, xpBanked) {
   if (character.training_stat) {
     trainingTickHandle = setInterval(() => {
       const { xp, percent, ready } = xpProgress(character.training_started_at, xpNeededForCurrentPoint, xpBanked);
-      const fill = careerProfile.querySelector('[data-xp-fill]');
-      const label = careerProfile.querySelector('[data-xp-label]');
-      const wrap = careerProfile.querySelector('[data-xp-bar]');
+      const fill = careerProfilePanel.querySelector('[data-xp-fill]');
+      const label = careerProfilePanel.querySelector('[data-xp-label]');
+      const wrap = careerProfilePanel.querySelector('[data-xp-bar]');
       if (fill) fill.style.width = `${percent}%`;
       if (label) label.textContent = ready ? 'Point ready — hit Check Progress to claim!' : `${xp.toLocaleString()} / ${xpNeededForCurrentPoint.toLocaleString()} XP`;
       if (wrap) wrap.classList.toggle('ready', ready);
@@ -574,6 +601,180 @@ async function startTraining(stat) {
     await loadCareer();
   } catch (error) {
     // Leave the UI as-is; the user can just try again.
+  }
+}
+
+// ---- Shop panel ----
+
+async function loadShopPanel() {
+  hubShopItems.innerHTML = '<p class="profile-empty-note">Loading shop...</p>';
+
+  try {
+    const res = await authedFetch('/api/shop-get');
+    if (!res.ok) throw new Error('Failed to load shop');
+    const data = await res.json();
+    renderShopPanel(data.items, data.balance, data.inventory);
+  } catch (error) {
+    hubShopItems.innerHTML = '<p class="profile-empty-note">Could not load the shop. Try again.</p>';
+  }
+}
+
+function renderShopPanel(items, balance, inventory) {
+  hubShopBalance.textContent = `$${balance}`;
+
+  hubShopItems.innerHTML = items.map((item) => {
+    const owned = inventory[item.id] || 0;
+    const canAfford = balance >= item.price;
+    return `
+      <div class="shop-item-card">
+        <img src="${item.image}" alt="${item.name}" class="shop-item-image">
+        <div class="shop-item-info">
+          <span class="shop-item-name">${item.name}</span>
+          <span class="shop-item-desc">${item.description}</span>
+          ${owned > 0 ? `<span class="shop-item-owned">You own ${owned}</span>` : ''}
+        </div>
+        <button type="button" class="btn primary shop-item-buy" data-buy="${item.id}" ${canAfford ? '' : 'disabled'}>
+          Buy — $${item.price}
+        </button>
+      </div>
+    `;
+  }).join('');
+
+  hubShopItems.querySelectorAll('[data-buy]').forEach((btn) => {
+    btn.addEventListener('click', () => buyItemHub(btn.getAttribute('data-buy')));
+  });
+}
+
+async function buyItemHub(itemId) {
+  try {
+    const res = await authedFetch('/api/shop-buy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ itemId })
+    });
+    if (!res.ok) throw new Error('Failed to buy item');
+    await loadShopPanel();
+  } catch (error) {
+    // Leave the UI as-is; the user can just try again.
+  }
+}
+
+// ---- Inventory panel ----
+
+let hubConfirmingItemId = null;
+
+async function loadInventoryPanel() {
+  hubInventoryItems.innerHTML = '<p class="profile-empty-note">Loading inventory...</p>';
+  hubInventoryEmpty.classList.add('hidden');
+
+  try {
+    const res = await authedFetch('/api/inventory-get');
+    if (!res.ok) throw new Error('Failed to load inventory');
+    const data = await res.json();
+    renderInventoryPanel(data.items, data.inventory, data.activeBoostPercent, data.activeBoostExpiresAt);
+  } catch (error) {
+    hubInventoryItems.innerHTML = '<p class="profile-empty-note">Could not load your inventory. Try again.</p>';
+  }
+}
+
+function renderInventoryPanel(catalog, inventory, activeBoostPercent, activeBoostExpiresAt) {
+  const active = activeBoostExpiresAt && new Date(activeBoostExpiresAt).getTime() > Date.now();
+  if (active) {
+    const remainingMin = Math.max(1, Math.ceil((new Date(activeBoostExpiresAt).getTime() - Date.now()) / 60000));
+    hubInventoryBoostStatus.textContent = `⚡ +${activeBoostPercent}% training speed active — ${remainingMin}m left`;
+    hubInventoryBoostStatus.classList.remove('hidden');
+  } else {
+    hubInventoryBoostStatus.classList.add('hidden');
+  }
+
+  const ownedEntries = Object.entries(inventory).filter(([, qty]) => qty > 0);
+
+  if (ownedEntries.length === 0) {
+    hubInventoryItems.innerHTML = '';
+    hubInventoryEmpty.classList.remove('hidden');
+    return;
+  }
+
+  hubInventoryEmpty.classList.add('hidden');
+
+  hubInventoryItems.innerHTML = ownedEntries.map(([itemId, qty]) => {
+    const item = catalog.find((i) => i.id === itemId);
+    if (!item) return '';
+    const confirming = hubConfirmingItemId === itemId;
+
+    return `
+      <div class="shop-item-card inventory-item-card">
+        <div class="inventory-item-image-wrap" data-item-toggle="${itemId}">
+          <img src="${item.image}" alt="${item.name}" class="shop-item-image inventory-item-image">
+          <span class="inventory-item-qty">x${qty}</span>
+          ${confirming ? `
+            <div class="inventory-confirm-overlay">
+              <button type="button" class="btn primary inventory-confirm-btn" data-drink="${itemId}">Drink</button>
+              <button type="button" class="btn secondary inventory-confirm-btn" data-cancel>Cancel</button>
+            </div>
+          ` : ''}
+        </div>
+        <div class="shop-item-info">
+          <span class="shop-item-name">${item.name}</span>
+          <span class="shop-item-desc">${item.description}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  hubInventoryItems.querySelectorAll('[data-item-toggle]').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      if (e.target.closest('.inventory-confirm-overlay')) return;
+      hubConfirmingItemId = el.getAttribute('data-item-toggle');
+      renderInventoryPanel(catalog, inventory, activeBoostPercent, activeBoostExpiresAt);
+    });
+  });
+
+  hubInventoryItems.querySelectorAll('[data-cancel]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      hubConfirmingItemId = null;
+      renderInventoryPanel(catalog, inventory, activeBoostPercent, activeBoostExpiresAt);
+    });
+  });
+
+  hubInventoryItems.querySelectorAll('[data-drink]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      drinkItemHub(btn.getAttribute('data-drink'));
+    });
+  });
+}
+
+async function drinkItemHub(itemId) {
+  try {
+    const res = await authedFetch('/api/inventory-consume', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ itemId })
+    });
+    if (!res.ok) throw new Error('Failed to consume item');
+    hubConfirmingItemId = null;
+    await loadInventoryPanel();
+    await refreshProfilePanel(); // so the new boost shows up immediately if they switch back
+  } catch (error) {
+    hubConfirmingItemId = null;
+  }
+}
+
+// Re-fetches and re-renders just the Profile panel's data, without
+// touching which hub tab is currently visible - used after drinking a
+// boost so it's already reflected if the player switches back to Profile.
+async function refreshProfilePanel() {
+  try {
+    const res = await authedFetch('/api/career-get');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.character && data.character.team_abbr) {
+      renderCareerProfile(data.character, data.xpNeededForCurrentPoint, data.xpBanked);
+    }
+  } catch (error) {
+    // Non-critical - the profile will pick up the fresh state next full load.
   }
 }
 

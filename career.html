@@ -31,8 +31,6 @@
     <nav class="site-nav">
       <a href="index.html" class="site-nav-tab">Quick Play</a>
       <a href="career.html" class="site-nav-tab active">My Career</a>
-      <a href="shop.html" class="site-nav-tab">Shop</a>
-      <a href="inventory.html" class="site-nav-tab">Inventory</a>
     </nav>
 
     <section id="career-signin" class="career-gate hidden">
@@ -88,7 +86,31 @@
       <div id="career-team-grid" class="career-team-grid"></div>
     </section>
 
-    <section id="career-profile" class="profile-card hidden"></section>
+    <section id="career-hub" class="career-hub hidden">
+      <nav class="career-side-tabs">
+        <button type="button" class="career-side-tab active" data-hub-tab="profile">Profile</button>
+        <button type="button" class="career-side-tab" data-hub-tab="shop">Shop</button>
+        <button type="button" class="career-side-tab" data-hub-tab="inventory">Inventory</button>
+      </nav>
+      <div class="career-hub-content">
+        <div id="career-profile-panel" class="career-panel"></div>
+
+        <div id="career-shop-panel" class="career-panel hidden">
+          <div class="shop-header">
+            <p class="profile-section-label">Shop</p>
+            <span id="hub-shop-balance" class="career-points-balance">$0</span>
+          </div>
+          <div id="hub-shop-items" class="shop-items"></div>
+        </div>
+
+        <div id="career-inventory-panel" class="career-panel hidden">
+          <p class="profile-section-label">Inventory</p>
+          <p id="hub-inventory-boost-status" class="career-drink-boost-active hidden"></p>
+          <div id="hub-inventory-items" class="shop-items"></div>
+          <p id="hub-inventory-empty" class="profile-empty-note hidden">Nothing here yet — visit the Shop to buy items.</p>
+        </div>
+      </div>
+    </section>
   </main>
 
   <script src="players.js"></script>

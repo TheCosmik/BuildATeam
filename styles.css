@@ -1521,3 +1521,91 @@ html, body {
   padding: 5px 0;
   font-size: 11px;
 }
+
+/* Career hub (Profile / Shop / Inventory tabs on one card) */
+
+.career-hub {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  align-items: stretch;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(107, 226, 107, 0.3);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.career-side-tabs {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: 116px;
+  background: rgba(255, 255, 255, 0.02);
+  border-right: 1px solid rgba(238, 247, 238, 0.1);
+}
+
+.career-side-tab {
+  padding: 16px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  color: rgba(238, 247, 238, 0.55);
+  background: transparent;
+  border: none;
+  border-left: 3px solid transparent;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.career-side-tab:hover {
+  color: #eef7ee;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.career-side-tab.active {
+  color: #6be26b;
+  background: rgba(107, 226, 107, 0.08);
+  border-left-color: #6be26b;
+}
+
+.career-hub-content {
+  flex: 1;
+  min-width: 0;
+  padding: 28px;
+}
+
+.career-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (max-width: 560px) {
+  .career-hub {
+    flex-direction: column;
+  }
+
+  .career-side-tabs {
+    flex-direction: row;
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid rgba(238, 247, 238, 0.1);
+  }
+
+  .career-side-tab {
+    flex: 1;
+    text-align: center;
+    border-left: none;
+    border-bottom: 3px solid transparent;
+  }
+
+  .career-side-tab.active {
+    border-left-color: transparent;
+    border-bottom-color: #6be26b;
+  }
+
+  .career-hub-content {
+    padding: 20px;
+  }
+}

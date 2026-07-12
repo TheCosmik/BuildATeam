@@ -28,6 +28,11 @@
   <main class="wrap">
     <h1 class="title">Build-A-<span>QB</span></h1>
 
+    <nav class="site-nav">
+      <a href="index.html" class="site-nav-tab active">Quick Play</a>
+      <a href="career.html" class="site-nav-tab">My Career</a>
+    </nav>
+
     <section class="qb-figure-wrap" id="stat-board"></section>
 
     <section class="roll-area">
@@ -48,14 +53,6 @@
         <div class="player-card-actions">
           <button id="reroll-btn" class="btn secondary">Reroll (2 left)</button>
         </div>
-      </div>
-
-      <div id="name-qb-state" class="name-qb-state hidden">
-        <p class="complete-msg">Your QB is built. Give your character a name:</p>
-        <form id="name-qb-form" class="name-qb-form">
-          <input id="character-name-input" type="text" maxlength="40" placeholder="Character name" required>
-          <button type="submit" class="btn primary">Confirm</button>
-        </form>
       </div>
 
       <div id="complete-state" class="complete-state hidden">

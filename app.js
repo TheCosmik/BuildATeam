@@ -68,62 +68,9 @@ const authSignInBtn = document.getElementById('auth-signin-btn');
 const authSignedIn = document.getElementById('auth-signed-in');
 const authUsername = document.getElementById('auth-username');
 const authSignOutBtn = document.getElementById('auth-signout-btn');
-const nameQbState = document.getElementById('name-qb-state');
-const nameQbForm = document.getElementById('name-qb-form');
-const characterNameInput = document.getElementById('character-name-input');
-
-let characterName = null;
 
 function isSignedIn() {
   return Boolean(window.Clerk && window.Clerk.user);
-}
-
-async function authedFetch(url, options = {}) {
-  const token = await window.Clerk.session.getToken();
-  return fetch(url, {
-    ...options,
-    headers: {
-      ...(options.headers || {}),
-      Authorization: `Bearer ${token}`
-    }
-  });
-}
-
-async function saveCharacter(name) {
-  if (!isSignedIn()) return;
-  try {
-    await authedFetch('/api/character-save', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ characterName: name, stats: qb, statSources: qbSource })
-    });
-  } catch (error) {
-    console.error('Failed to save character', error);
-  }
-}
-
-async function fetchSavedCharacter() {
-  if (!isSignedIn()) return null;
-  try {
-    const res = await authedFetch('/api/character-get');
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.character || null;
-  } catch (error) {
-    console.error('Failed to fetch saved character', error);
-    return null;
-  }
-}
-
-function restoreCharacter(saved) {
-  STATS.forEach(({ key }) => {
-    if (saved.stats && saved.stats[key] !== undefined) qb[key] = saved.stats[key];
-    if (saved.stat_sources && saved.stat_sources[key]) qbSource[key] = saved.stat_sources[key];
-  });
-  characterName = saved.character_name || null;
-  renderStatBoard();
-  idleState.classList.add('hidden');
-  completeState.classList.remove('hidden');
 }
 
 function updateAuthUI() {
@@ -150,14 +97,9 @@ authSignOutBtn.addEventListener('click', () => {
 });
 
 function initClerk() {
-  window.Clerk.load().then(async () => {
+  window.Clerk.load().then(() => {
     updateAuthUI();
     window.Clerk.addListener(() => updateAuthUI());
-
-    if (window.Clerk.user) {
-      const saved = await fetchSavedCharacter();
-      if (saved) restoreCharacter(saved);
-    }
   });
 }
 
@@ -166,15 +108,6 @@ if (window.Clerk) {
 } else {
   window.__clerkLoaded = initClerk;
 }
-
-nameQbForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  characterName = characterNameInput.value.trim();
-  if (!characterName) return;
-  saveCharacter(characterName);
-  nameQbState.classList.add('hidden');
-  completeState.classList.remove('hidden');
-});
 
 function renderStatBoard() {
   let callouts = '';
@@ -256,11 +189,7 @@ function takeStat(key) {
 
   if (allFilled) {
     idleState.classList.add('hidden');
-    if (isSignedIn()) {
-      nameQbState.classList.remove('hidden');
-    } else {
-      completeState.classList.remove('hidden');
-    }
+    completeState.classList.remove('hidden');
   } else {
     idleState.classList.remove('hidden');
   }
@@ -308,29 +237,6 @@ const playoffRetryBtn = document.getElementById('playoff-retry-btn');
 
 let currentTeam = null;
 let currentSeed = null;
-let currentSeasonWins = null;
-let currentSeasonLosses = null;
-
-async function postSeasonResult(team, wins, losses, qualified, finish) {
-  if (!isSignedIn()) return;
-  try {
-    await authedFetch('/api/season-result', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        teamAbbr: team.abbr,
-        teamName: team.name,
-        teamColor: team.color,
-        wins,
-        losses,
-        qualified,
-        finish
-      })
-    });
-  } catch (error) {
-    console.error('Failed to save season result', error);
-  }
-}
 
 function teamLogoUrl(abbr) {
   const slug = abbr === 'WAS' ? 'wsh' : abbr.toLowerCase();
@@ -530,9 +436,6 @@ function resetGame() {
   renderStatBoard();
 
   completeState.classList.add('hidden');
-  nameQbState.classList.add('hidden');
-  characterNameInput.value = '';
-  characterName = null;
   teamRollAnim.classList.add('hidden');
   teamRollAnim.classList.remove('settle');
   teamCard.classList.add('hidden');
@@ -677,13 +580,10 @@ function showSeasonResult(team, wins, losses) {
     retryBtn.classList.add('hidden');
     currentTeam = team;
     currentSeed = seed;
-    currentSeasonWins = wins;
-    currentSeasonLosses = losses;
   } else {
     resultMsg.textContent = `${team.name} missed the playoffs.`;
     continueBtn.classList.add('hidden');
     retryBtn.classList.remove('hidden');
-    postSeasonResult(team, wins, losses, false, 'Missed Playoffs');
   }
 
   seasonResult.classList.remove('hidden');
@@ -782,17 +682,12 @@ function showPlayoffFinal(champion, team, opponent, yourScore, oppScore, lostRou
   playoffState.classList.add('hidden');
   playoffResult.classList.remove('hidden');
 
-  const finish = champion
-    ? 'Super Bowl Champion'
-    : (lostRound === 'Super Bowl' ? 'Lost Super Bowl' : `Lost ${lostRound}`);
-
   if (champion) {
     playoffResultMsg.textContent = `\u{1F3C6} ${team.name} are Super Bowl Champions! (${yourScore}-${oppScore} in the Super Bowl)`;
   } else {
     playoffResultMsg.textContent = `${team.name} were eliminated in the ${lostRound} (lost ${yourScore}-${oppScore} to ${opponent.name}).`;
   }
 
-  postSeasonResult(team, currentSeasonWins, currentSeasonLosses, true, finish);
   playoffRetryBtn.classList.remove('hidden');
 }
 

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Career - Build-A-Team</title>
+<link rel="stylesheet" href="styles.css">
+<script
+  async
+  crossorigin="anonymous"
+  data-clerk-publishable-key="pk_test_Y29vbC1ncnViLTgwLmNsZXJrLmFjY291bnRzLmRldiQ"
+  onload="window.__clerkLoaded && window.__clerkLoaded()"
+  src="https://cool-grub-80.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+  type="text/javascript"
+></script>
+</head>
+<body>
+  <div class="field-bg"></div>
+
+  <div id="clerk-auth" class="clerk-auth">
+    <button id="auth-signin-btn" class="btn secondary auth-btn hidden">Sign In</button>
+    <div id="auth-signed-in" class="auth-signed-in hidden">
+      <a id="auth-username" class="auth-username" href="#"></a>
+      <button id="auth-signout-btn" class="btn secondary auth-btn">Sign Out</button>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <h1 class="title">Build-A-<span>QB</span></h1>
+
+    <nav class="site-nav">
+      <a href="index.html" class="site-nav-tab">Quick Play</a>
+      <a href="career.html" class="site-nav-tab active">My Career</a>
+    </nav>
+
+    <section id="career-signin" class="career-gate hidden">
+      <p class="complete-msg">Sign in to start your career.</p>
+      <button id="career-signin-btn" class="btn primary">Sign In</button>
+    </section>
+
+    <section id="career-loading" class="career-gate">
+      <p class="complete-msg">Loading your career...</p>
+    </section>
+
+    <section id="career-create" class="career-gate hidden">
+      <p class="complete-msg">You haven't created a career QB yet.</p>
+      <p class="career-subtext">Roll for stats capped at 65 overall, pick your team, and build a legacy you can train and improve over time.</p>
+      <button id="career-create-btn" class="btn primary">Create Your QB</button>
+    </section>
+
+    <section id="career-builder" class="career-builder hidden">
+      <section class="qb-figure-wrap" id="career-stat-board"></section>
+
+      <section class="roll-area">
+        <div id="career-idle-state" class="idle-state">
+          <button id="career-roll-btn" class="btn primary">Roll for a Player</button>
+        </div>
+
+        <div id="career-player-card" class="player-card hidden">
+          <div class="player-card-head">
+            <img id="career-player-photo" class="player-photo" src="" alt="">
+            <div class="player-card-info">
+              <span id="career-player-name" class="player-name"></span>
+              <span id="career-player-team" class="player-team"></span>
+              <span id="career-player-bio" class="player-bio"></span>
+            </div>
+          </div>
+          <div id="career-player-stats" class="player-stats"></div>
+          <div class="player-card-actions">
+            <button id="career-reroll-btn" class="btn secondary">Reroll (2 left)</button>
+          </div>
+        </div>
+
+        <div id="career-name-state" class="name-qb-state hidden">
+          <p class="complete-msg">Your QB is built. Give your character a name:</p>
+          <form id="career-name-form" class="name-qb-form">
+            <input id="career-name-input" type="text" maxlength="40" placeholder="Character name" required>
+            <button type="submit" class="btn primary">Confirm</button>
+          </form>
+        </div>
+      </section>
+    </section>
+
+    <section id="career-team-picker" class="career-team-picker hidden">
+      <p class="complete-msg">Choose your team:</p>
+      <div id="career-team-grid" class="career-team-grid"></div>
+    </section>
+
+    <section id="career-profile" class="profile-card hidden"></section>
+  </main>
+
+  <script src="players.js"></script>
+  <script src="teams.js"></script>
+  <script src="career.js"></script>
+</body>
+</html>

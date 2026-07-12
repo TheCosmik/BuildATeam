@@ -63,7 +63,7 @@
     const user = window.Clerk.user;
     accountAvatar.src = user.imageUrl || '';
     accountName.textContent = user.username || user.firstName || 'Player';
-    accountProfileLink.href = `profile.html?username=${encodeURIComponent(user.username || user.id)}`;
+    accountProfileLink.href = 'career.html';
 
     const character = await fetchCareerSummary();
     if (character && character.character_name) accountName.textContent = character.character_name;

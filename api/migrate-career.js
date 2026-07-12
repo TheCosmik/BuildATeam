@@ -11,6 +11,7 @@ module.exports = async function handler(req, res) {
     await sql`ALTER TABLE characters ADD COLUMN IF NOT EXISTS inventory JSONB NOT NULL DEFAULT '{}'::jsonb`;
     await sql`ALTER TABLE characters ADD COLUMN IF NOT EXISTS active_boost_percent INTEGER NOT NULL DEFAULT 0`;
     await sql`ALTER TABLE characters ADD COLUMN IF NOT EXISTS active_boost_expires_at TIMESTAMPTZ`;
+    await sql`ALTER TABLE characters ADD COLUMN IF NOT EXISTS custom_avatar_url TEXT`;
 
     // training_points is now a $ balance, not passively-accruing Training
     // Points - reset everyone to $0 since the old accrual mechanic is

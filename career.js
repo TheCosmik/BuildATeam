@@ -456,9 +456,25 @@ function renderCareerProfile(character, xpNeededForCurrentPoint, xpBanked) {
   const overall = Math.round(STATS.reduce((sum, { key }) => sum + stats[key], 0) / STATS.length);
   const tier = overallTier(overall);
 
-  const avatar = character.image_url
-    ? `<img class="profile-avatar" src="${character.image_url}" alt="">`
+  const avatarSrc = character.custom_avatar_url || character.image_url;
+  const avatarImg = avatarSrc
+    ? `<img class="profile-avatar" src="${avatarSrc}" alt="">`
     : `<div class="profile-avatar profile-avatar-empty">?</div>`;
+
+  const avatar = `
+    <div class="profile-avatar-wrap" id="profile-avatar-wrap">
+      ${avatarImg}
+      <button type="button" class="profile-avatar-edit-btn" id="profile-avatar-edit-btn">Edit</button>
+      <div class="profile-avatar-form hidden" id="profile-avatar-form">
+        <input type="text" id="profile-avatar-input" class="profile-avatar-input" placeholder="Image link (https://...)" value="${avatarSrc || ''}">
+        <div class="profile-avatar-form-actions">
+          <button type="button" id="profile-avatar-save-btn" class="btn primary profile-avatar-btn">Save</button>
+          <button type="button" id="profile-avatar-cancel-btn" class="btn secondary profile-avatar-btn">Cancel</button>
+        </div>
+        <p class="profile-avatar-hint">Leave blank to use your account photo</p>
+      </div>
+    </div>
+  `;
 
   const teamPill = character.team_abbr
     ? `
@@ -547,6 +563,26 @@ function renderCareerProfile(character, xpNeededForCurrentPoint, xpBanked) {
   const refreshBtn = document.getElementById('career-refresh-btn');
   if (refreshBtn) refreshBtn.addEventListener('click', () => loadCareer());
 
+  const avatarEditBtn = document.getElementById('profile-avatar-edit-btn');
+  const avatarForm = document.getElementById('profile-avatar-form');
+  const avatarInput = document.getElementById('profile-avatar-input');
+  const avatarCancelBtn = document.getElementById('profile-avatar-cancel-btn');
+  const avatarSaveBtn = document.getElementById('profile-avatar-save-btn');
+
+  if (avatarEditBtn) {
+    avatarEditBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      avatarForm.classList.remove('hidden');
+      avatarInput.focus();
+    });
+  }
+  if (avatarCancelBtn) {
+    avatarCancelBtn.addEventListener('click', () => avatarForm.classList.add('hidden'));
+  }
+  if (avatarSaveBtn) {
+    avatarSaveBtn.addEventListener('click', () => saveAvatarUrl(avatarInput.value.trim()));
+  }
+
   if (character.training_stat) {
     trainingTickHandle = setInterval(() => {
       const { xp, percent, ready } = xpProgress(character.training_started_at, xpNeededForCurrentPoint, xpBanked);
@@ -557,6 +593,21 @@ function renderCareerProfile(character, xpNeededForCurrentPoint, xpBanked) {
       if (label) label.textContent = ready ? 'Point ready — hit Check Progress to claim!' : `${xp.toLocaleString()} / ${xpNeededForCurrentPoint.toLocaleString()} XP`;
       if (wrap) wrap.classList.toggle('ready', ready);
     }, 1000);
+  }
+}
+
+async function saveAvatarUrl(url) {
+  try {
+    const res = await authedFetch('/api/career-avatar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ avatarUrl: url })
+    });
+    if (!res.ok) throw new Error('Failed to save avatar');
+    await loadCareer();
+    if (window.refreshAccountMenu) window.refreshAccountMenu();
+  } catch (error) {
+    // Leave the form open so the user can fix the link and retry.
   }
 }
 

@@ -1032,6 +1032,80 @@ html, body {
   background: rgba(255, 255, 255, 0.05);
 }
 
+.profile-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.profile-avatar-edit-btn {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #eef7ee;
+  background: rgba(4, 10, 6, 0.6);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.profile-avatar-wrap:hover .profile-avatar-edit-btn {
+  opacity: 1;
+}
+
+.profile-avatar-form {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 240px;
+  padding: 14px;
+  background: #0f2115;
+  border: 1px solid rgba(107, 226, 107, 0.3);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.profile-avatar-input {
+  padding: 8px 10px;
+  font-size: 12px;
+  color: #eef7ee;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(107, 226, 107, 0.3);
+  border-radius: 6px;
+  outline: none;
+}
+
+.profile-avatar-input:focus {
+  border-color: rgba(107, 226, 107, 0.6);
+}
+
+.profile-avatar-form-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.profile-avatar-btn {
+  flex: 1;
+  padding: 6px 0;
+  font-size: 11px;
+}
+
+.profile-avatar-hint {
+  margin: 0;
+  font-size: 10px;
+  color: rgba(238, 247, 238, 0.4);
+}
+
 .profile-header-info {
   display: flex;
   flex-direction: column;

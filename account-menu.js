@@ -35,13 +35,13 @@
     return Boolean(window.Clerk && window.Clerk.user);
   }
 
-  async function fetchCharacterName() {
+  async function fetchCareerSummary() {
     try {
       const token = await window.Clerk.session.getToken();
       const res = await fetch('/api/career-get', { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) return null;
       const data = await res.json();
-      return (data.character && data.character.character_name) || null;
+      return data.character || null;
     } catch (error) {
       return null;
     }
@@ -63,8 +63,9 @@
     accountName.textContent = user.username || user.firstName || 'Player';
     accountProfileLink.href = `profile.html?username=${encodeURIComponent(user.username || user.id)}`;
 
-    const characterName = await fetchCharacterName();
-    if (characterName) accountName.textContent = characterName;
+    const character = await fetchCareerSummary();
+    if (character && character.character_name) accountName.textContent = character.character_name;
+    if (character && character.custom_avatar_url) accountAvatar.src = character.custom_avatar_url;
   }
 
   authSignInBtn.addEventListener('click', () => window.Clerk.openSignIn({}));

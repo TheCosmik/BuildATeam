@@ -181,7 +181,7 @@ async function loadCareer() {
     }
 
     hideAllGates();
-    renderCareerProfile(data.character, data.xpNeededForCurrentPoint, data.upgradeTiers, data.xpBanked);
+    renderCareerProfile(data.character, data.xpNeededForCurrentPoint, data.xpBanked);
     careerProfile.classList.remove('hidden');
   } catch (error) {
     hideAllGates();
@@ -452,41 +452,7 @@ function activeDrinkBoostHtml(character) {
   return `<p class="career-drink-boost-active">&#9889; +${character.active_boost_percent}% from a QB XP Boost — ${remainingMin}m left</p>`;
 }
 
-function upgradeShopHtml(character, upgradeTiers) {
-  const currentTier = character.speed_upgrade_tier || 0;
-  const currentBoost = upgradeTiers
-    .filter((t) => t.tier <= currentTier)
-    .reduce((sum, t) => sum + t.boostPercent, 0);
-  const nextTierDef = upgradeTiers.find((t) => t.tier === currentTier + 1);
-
-  const nextTierHtml = nextTierDef
-    ? `
-      <div class="career-upgrade-next">
-        <div class="career-upgrade-info">
-          <span class="career-upgrade-name">${nextTierDef.label}</span>
-          <span class="career-upgrade-desc">+${nextTierDef.boostPercent}% training speed (total would be +${currentBoost + nextTierDef.boostPercent}%)</span>
-        </div>
-        <button type="button" id="career-upgrade-btn" class="btn primary career-upgrade-btn" ${character.training_points < nextTierDef.cost ? 'disabled' : ''}>
-          Buy — $${nextTierDef.cost}
-        </button>
-      </div>
-    `
-    : `<p class="career-upgrade-maxed">Training facility fully upgraded — max speed reached.</p>`;
-
-  return `
-    <div class="career-upgrade-shop">
-      <div class="career-stats-head">
-        <p class="profile-section-label">Training Facility${currentBoost > 0 ? ` — +${currentBoost}% speed active` : ''}</p>
-        <span class="career-points-balance">$${character.training_points || 0}</span>
-      </div>
-      ${activeDrinkBoostHtml(character)}
-      ${nextTierHtml}
-      <p class="career-upgrade-note">Spend $ here for a permanent training-speed boost, or visit the Shop for temporary boosts.</p>
-    </div>
-  `;
-}
-
-function renderCareerProfile(character, xpNeededForCurrentPoint, upgradeTiers, xpBanked) {
+function renderCareerProfile(character, xpNeededForCurrentPoint, xpBanked) {
   if (trainingTickHandle) clearInterval(trainingTickHandle);
 
   const stats = character.stats || {};
@@ -551,10 +517,9 @@ function renderCareerProfile(character, xpNeededForCurrentPoint, upgradeTiers, x
         <p class="profile-section-label">QB Ratings &mdash; Workout a stat to train it up over time</p>
         <button type="button" id="career-refresh-btn" class="btn secondary career-refresh-btn">Check Progress</button>
       </div>
+      ${activeDrinkBoostHtml(character)}
       ${statRows}
     </div>
-
-    ${upgradeShopHtml(character, upgradeTiers)}
 
     <div class="profile-career-grid">
       <div class="profile-career-stat">
@@ -585,9 +550,6 @@ function renderCareerProfile(character, xpNeededForCurrentPoint, upgradeTiers, x
   const refreshBtn = document.getElementById('career-refresh-btn');
   if (refreshBtn) refreshBtn.addEventListener('click', () => loadCareer());
 
-  const upgradeBtn = document.getElementById('career-upgrade-btn');
-  if (upgradeBtn) upgradeBtn.addEventListener('click', () => buyUpgrade());
-
   if (character.training_stat) {
     trainingTickHandle = setInterval(() => {
       const { xp, percent, ready } = xpProgress(character.training_started_at, xpNeededForCurrentPoint, xpBanked);
@@ -615,12 +577,3 @@ async function startTraining(stat) {
   }
 }
 
-async function buyUpgrade() {
-  try {
-    const res = await authedFetch('/api/career-upgrade', { method: 'POST' });
-    if (!res.ok) throw new Error('Failed to buy upgrade');
-    await loadCareer();
-  } catch (error) {
-    // Leave the UI as-is; the user can just try again.
-  }
-}

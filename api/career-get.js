@@ -1,6 +1,6 @@
 const { sql } = require('../lib/db');
 const { requireUserId } = require('../lib/clerk-verify');
-const { flushProgress, xpCostForPoint, totalBoostPercent, UPGRADE_TIERS, STAT_MAX } = require('../lib/training');
+const { flushProgress, xpCostForPoint, totalBoostPercent, STAT_MAX } = require('../lib/training');
 
 module.exports = async function handler(req, res) {
   try {
@@ -41,7 +41,7 @@ module.exports = async function handler(req, res) {
       : null;
     const xpBanked = character.training_stat ? (character.training_progress[character.training_stat] || 0) : 0;
 
-    res.status(200).json({ character, xpNeededForCurrentPoint, xpBanked, upgradeTiers: UPGRADE_TIERS });
+    res.status(200).json({ character, xpNeededForCurrentPoint, xpBanked });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

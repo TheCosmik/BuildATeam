@@ -1386,14 +1386,6 @@ html, body {
   50% { opacity: 0.5; }
 }
 
-/* Training facility / upgrade shop */
-
-.career-upgrade-shop {
-  border-top: 1px solid rgba(238, 247, 238, 0.1);
-  padding-top: 18px;
-  width: 100%;
-}
-
 .career-points-balance {
   flex-shrink: 0;
   padding: 4px 12px;
@@ -1404,57 +1396,6 @@ html, body {
   border: 1px solid rgba(255, 209, 102, 0.35);
   border-radius: 999px;
   font-variant-numeric: tabular-nums;
-}
-
-.career-upgrade-next {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(238, 247, 238, 0.12);
-  border-radius: 10px;
-}
-
-.career-upgrade-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.career-upgrade-name {
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.career-upgrade-desc {
-  font-size: 12px;
-  color: rgba(238, 247, 238, 0.55);
-}
-
-.career-upgrade-btn {
-  flex-shrink: 0;
-  padding: 8px 16px;
-  font-size: 12px;
-}
-
-.career-upgrade-maxed {
-  margin: 0;
-  padding: 12px 14px;
-  font-size: 13px;
-  text-align: center;
-  color: #ffd166;
-  background: rgba(255, 209, 102, 0.06);
-  border: 1px solid rgba(255, 209, 102, 0.25);
-  border-radius: 10px;
-}
-
-.career-upgrade-note {
-  margin: 10px 0 0;
-  font-size: 11px;
-  color: rgba(238, 247, 238, 0.45);
 }
 
 .career-drink-boost-active {

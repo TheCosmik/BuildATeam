@@ -1,6 +1,7 @@
 const { sql } = require('../lib/db');
 const { requireUserId } = require('../lib/clerk-verify');
-const { flushProgress, UPGRADE_TIERS } = require('../lib/training');
+const { flushProgress } = require('../lib/training');
+const { getItem } = require('../lib/shop');
 
 module.exports = async function handler(req, res) {
   try {
@@ -12,6 +13,13 @@ module.exports = async function handler(req, res) {
     const userId = await requireUserId(req);
     if (!userId) {
       res.status(401).json({ error: 'Not signed in' });
+      return;
+    }
+
+    const { itemId } = req.body || {};
+    const item = getItem(itemId);
+    if (!item) {
+      res.status(400).json({ error: 'Unknown item' });
       return;
     }
 
@@ -27,31 +35,27 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    const flushed = await flushProgress(userId, rows[0]);
-    const currentTier = flushed.speed_upgrade_tier || 0;
-    const nextTierDef = UPGRADE_TIERS.find((t) => t.tier === currentTier + 1);
+    const character = await flushProgress(userId, rows[0]);
+    const balance = character.training_points || 0;
 
-    if (!nextTierDef) {
-      res.status(400).json({ error: 'Already at max training tier' });
-      return;
-    }
-
-    if (flushed.training_points < nextTierDef.cost) {
+    if (balance < item.price) {
       res.status(400).json({ error: 'Not enough money' });
       return;
     }
 
-    const newBalance = flushed.training_points - nextTierDef.cost;
+    const newBalance = balance - item.price;
+    const inventory = character.inventory || {};
+    const newInventory = { ...inventory, [item.id]: (inventory[item.id] || 0) + 1 };
 
     await sql`
       UPDATE characters SET
         training_points = ${newBalance},
-        speed_upgrade_tier = ${nextTierDef.tier},
+        inventory = ${JSON.stringify(newInventory)},
         updated_at = now()
       WHERE user_id = ${userId}
     `;
 
-    res.status(200).json({ balance: newBalance, speedUpgradeTier: nextTierDef.tier });
+    res.status(200).json({ balance: newBalance, inventory: newInventory });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -443,6 +443,15 @@ function xpBarHtml(trainingStartedAt, xpNeeded, xpBanked) {
   `;
 }
 
+function activeDrinkBoostHtml(character) {
+  const expiresAt = character.active_boost_expires_at;
+  const active = expiresAt && new Date(expiresAt).getTime() > Date.now();
+  if (!active) return '';
+
+  const remainingMin = Math.max(1, Math.ceil((new Date(expiresAt).getTime() - Date.now()) / 60000));
+  return `<p class="career-drink-boost-active">&#9889; +${character.active_boost_percent}% from a QB XP Boost — ${remainingMin}m left</p>`;
+}
+
 function upgradeShopHtml(character, upgradeTiers) {
   const currentTier = character.speed_upgrade_tier || 0;
   const currentBoost = upgradeTiers
@@ -458,7 +467,7 @@ function upgradeShopHtml(character, upgradeTiers) {
           <span class="career-upgrade-desc">+${nextTierDef.boostPercent}% training speed (total would be +${currentBoost + nextTierDef.boostPercent}%)</span>
         </div>
         <button type="button" id="career-upgrade-btn" class="btn primary career-upgrade-btn" ${character.training_points < nextTierDef.cost ? 'disabled' : ''}>
-          Buy — ${nextTierDef.cost} TP
+          Buy — $${nextTierDef.cost}
         </button>
       </div>
     `
@@ -468,10 +477,11 @@ function upgradeShopHtml(character, upgradeTiers) {
     <div class="career-upgrade-shop">
       <div class="career-stats-head">
         <p class="profile-section-label">Training Facility${currentBoost > 0 ? ` — +${currentBoost}% speed active` : ''}</p>
-        <span class="career-points-balance">${character.training_points || 0} TP</span>
+        <span class="career-points-balance">$${character.training_points || 0}</span>
       </div>
+      ${activeDrinkBoostHtml(character)}
       ${nextTierHtml}
-      <p class="career-upgrade-note">Training Points trickle in passively over time (1 per real hour) — spend them here for a permanent training-speed boost.</p>
+      <p class="career-upgrade-note">Spend $ here for a permanent training-speed boost, or visit the Shop for temporary boosts.</p>
     </div>
   `;
 }

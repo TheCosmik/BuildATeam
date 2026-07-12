@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inventory - Build-A-Team</title>
+<link rel="stylesheet" href="styles.css">
+<script
+  async
+  crossorigin="anonymous"
+  data-clerk-publishable-key="pk_test_Y29vbC1ncnViLTgwLmNsZXJrLmFjY291bnRzLmRldiQ"
+  onload="window.__clerkLoaded && window.__clerkLoaded()"
+  src="https://cool-grub-80.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+  type="text/javascript"
+></script>
+</head>
+<body>
+  <div class="field-bg"></div>
+
+  <div id="clerk-auth" class="clerk-auth">
+    <button id="auth-signin-btn" class="btn secondary auth-btn hidden">Sign In</button>
+    <div id="auth-signed-in" class="auth-signed-in hidden">
+      <a id="auth-username" class="auth-username" href="#"></a>
+      <button id="auth-signout-btn" class="btn secondary auth-btn">Sign Out</button>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <h1 class="title">Build-A-<span>QB</span></h1>
+
+    <nav class="site-nav">
+      <a href="index.html" class="site-nav-tab">Quick Play</a>
+      <a href="career.html" class="site-nav-tab">My Career</a>
+      <a href="shop.html" class="site-nav-tab">Shop</a>
+      <a href="inventory.html" class="site-nav-tab active">Inventory</a>
+    </nav>
+
+    <section id="inventory-signin" class="career-gate hidden">
+      <p class="complete-msg">Sign in to see your inventory.</p>
+      <button id="inventory-signin-btn" class="btn primary">Sign In</button>
+    </section>
+
+    <section id="inventory-loading" class="career-gate">
+      <p class="complete-msg">Loading inventory...</p>
+    </section>
+
+    <section id="inventory-content" class="shop-content hidden">
+      <p class="profile-section-label">Inventory</p>
+      <p id="inventory-boost-status" class="career-drink-boost-active hidden"></p>
+      <div id="inventory-items" class="shop-items"></div>
+      <p id="inventory-empty" class="profile-empty-note hidden">Nothing here yet - visit the Shop to buy items.</p>
+    </section>
+  </main>
+
+  <script src="inventory.js"></script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 const { sql } = require('../lib/db');
 const { requireUserId } = require('../lib/clerk-verify');
-const { flushProgress, xpCostForPoint, STAT_MAX } = require('../lib/training');
+const { flushProgress, xpCostForPoint, totalBoostPercent, STAT_MAX } = require('../lib/training');
 
 const VALID_STATS = ['strength', 'arm', 'speed', 'build', 'accuracy', 'awareness'];
 
@@ -25,7 +25,7 @@ module.exports = async function handler(req, res) {
 
     const rows = await sql`
       SELECT stats, training_stat, training_started_at, training_progress, training_points,
-             training_points_synced_at, speed_upgrade_tier
+             speed_upgrade_tier, inventory, active_boost_percent, active_boost_expires_at
       FROM characters
       WHERE user_id = ${userId}
     `;
@@ -53,11 +53,13 @@ module.exports = async function handler(req, res) {
       WHERE user_id = ${userId}
     `;
 
+    const boost = totalBoostPercent(flushed.speed_upgrade_tier || 0, flushed.active_boost_percent, flushed.active_boost_expires_at);
+
     res.status(200).json({
       stats: flushed.stats,
       trainingStat: stat,
       trainingStartedAt: now,
-      xpNeededForCurrentPoint: xpCostForPoint(flushed.stats[stat], flushed.speed_upgrade_tier || 0),
+      xpNeededForCurrentPoint: xpCostForPoint(flushed.stats[stat], boost),
       xpBanked: (flushed.training_progress && flushed.training_progress[stat]) || 0
     });
   } catch (error) {

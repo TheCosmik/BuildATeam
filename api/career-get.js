@@ -1,6 +1,6 @@
 const { sql } = require('../lib/db');
 const { requireUserId } = require('../lib/clerk-verify');
-const { flushProgress, xpCostForPoint, UPGRADE_TIERS, STAT_MAX } = require('../lib/training');
+const { flushProgress, xpCostForPoint, totalBoostPercent, UPGRADE_TIERS, STAT_MAX } = require('../lib/training');
 
 module.exports = async function handler(req, res) {
   try {
@@ -13,8 +13,8 @@ module.exports = async function handler(req, res) {
     const rows = await sql`
       SELECT character_name, stats, stat_sources, image_url, team_abbr, team_name, team_color,
              seasons_played, career_wins, career_losses, playoff_appearances, superbowl_wins, best_finish,
-             training_stat, training_started_at, training_progress, training_points, training_points_synced_at,
-             speed_upgrade_tier
+             training_stat, training_started_at, training_progress, training_points,
+             speed_upgrade_tier, inventory, active_boost_percent, active_boost_expires_at
       FROM characters
       WHERE user_id = ${userId}
     `;
@@ -34,9 +34,10 @@ module.exports = async function handler(req, res) {
       character = { ...character, training_started_at: now };
     }
 
+    const boost = totalBoostPercent(character.speed_upgrade_tier || 0, character.active_boost_percent, character.active_boost_expires_at);
     const currentStat = character.training_stat ? character.stats[character.training_stat] : null;
     const xpNeededForCurrentPoint = currentStat !== null && currentStat < STAT_MAX
-      ? xpCostForPoint(currentStat, character.speed_upgrade_tier || 0)
+      ? xpCostForPoint(currentStat, boost)
       : null;
     const xpBanked = character.training_stat ? (character.training_progress[character.training_stat] || 0) : 0;
 

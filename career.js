@@ -574,7 +574,20 @@ function renderGymPanel(character, xpNeededForCurrentPoint, xpBanked) {
     `;
   }).join('');
 
+  const trainingLabel = character.training_stat
+    ? STATS.find((s) => s.key === character.training_stat).label
+    : null;
+  const trainingVisual = trainingLabel
+    ? `
+      <div class="gym-training-visual">
+        <div class="bench-press-sprite"></div>
+        <p class="gym-training-visual-label">Training ${trainingLabel}...</p>
+      </div>
+    `
+    : '';
+
   careerGymPanel.innerHTML = `
+    ${trainingVisual}
     <div class="profile-stats-block">
       <div class="career-stats-head">
         <p class="profile-section-label">QB Ratings &mdash; Workout a stat to train it up over time</p>

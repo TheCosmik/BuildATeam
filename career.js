@@ -85,8 +85,14 @@ function isSignedIn() {
   return Boolean(window.Clerk && window.Clerk.user);
 }
 
+// Cached alongside every normal request so the pause beacon (fired as the
+// page is closing) has a token ready without needing to await Clerk at the
+// worst possible moment.
+let cachedToken = null;
+
 async function authedFetch(url, options = {}) {
   const token = await window.Clerk.session.getToken();
+  cachedToken = token;
   return fetch(url, {
     ...options,
     headers: {
@@ -94,6 +100,23 @@ async function authedFetch(url, options = {}) {
       Authorization: `Bearer ${token}`
     }
   });
+}
+
+// Tells the server to bank current training progress and freeze the clock.
+// Fired when the player leaves the career page - training only accrues
+// while they're actually here (see loadCareer's visibility listeners).
+function pauseTraining() {
+  if (!cachedToken) return;
+  try {
+    fetch('/api/career-pause', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${cachedToken}` },
+      keepalive: true
+    });
+  } catch (error) {
+    // Best effort - if this is missed, the 6-hour active-window cap in
+    // lib/training.js bounds how much stray time could get credited.
+  }
 }
 
 function updateAuthUI() {
@@ -158,7 +181,7 @@ async function loadCareer() {
     }
 
     hideAllGates();
-    renderCareerProfile(data.character, data.xpNeededForCurrentPoint, data.upgradeTiers);
+    renderCareerProfile(data.character, data.xpNeededForCurrentPoint, data.upgradeTiers, data.xpBanked);
     careerProfile.classList.remove('hidden');
   } catch (error) {
     hideAllGates();
@@ -180,6 +203,19 @@ if (window.Clerk) {
 } else {
   window.__clerkLoaded = initClerk;
 }
+
+// Training only accrues while the player is actually here. Leaving the
+// page (hiding the tab, navigating away, or closing it) pauses the clock;
+// coming back resumes it via loadCareer's normal flush-on-view.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    pauseTraining();
+  } else if (isSignedIn()) {
+    loadCareer();
+  }
+});
+
+window.addEventListener('pagehide', pauseTraining);
 
 // ---- QB builder (roll/reroll/take, capped at CAREER_STAT_CAP) ----
 
@@ -382,16 +418,19 @@ function overallTier(overall) {
 
 let trainingTickHandle = null;
 
-function xpProgress(trainingStartedAt, xpNeeded) {
+// xpBanked is whatever was already earned toward this point in a previous
+// session (switched away and back, or left and returned) - the live
+// elapsed-since-training_started_at ticks up on top of that baseline.
+function xpProgress(trainingStartedAt, xpNeeded, xpBanked) {
   const elapsedSeconds = Math.floor((Date.now() - new Date(trainingStartedAt).getTime()) / 1000);
-  const xp = Math.max(0, Math.min(elapsedSeconds, xpNeeded));
+  const xp = Math.max(0, Math.min(xpBanked + elapsedSeconds, xpNeeded));
   const percent = (xp / xpNeeded) * 100;
-  const ready = elapsedSeconds >= xpNeeded;
+  const ready = xp >= xpNeeded;
   return { xp, percent, ready };
 }
 
-function xpBarHtml(trainingStartedAt, xpNeeded) {
-  const { xp, percent, ready } = xpProgress(trainingStartedAt, xpNeeded);
+function xpBarHtml(trainingStartedAt, xpNeeded, xpBanked) {
+  const { xp, percent, ready } = xpProgress(trainingStartedAt, xpNeeded, xpBanked);
   const label = ready
     ? 'Point ready — hit Check Progress to claim!'
     : `${xp.toLocaleString()} / ${xpNeeded.toLocaleString()} XP`;
@@ -437,7 +476,7 @@ function upgradeShopHtml(character, upgradeTiers) {
   `;
 }
 
-function renderCareerProfile(character, xpNeededForCurrentPoint, upgradeTiers) {
+function renderCareerProfile(character, xpNeededForCurrentPoint, upgradeTiers, xpBanked) {
   if (trainingTickHandle) clearInterval(trainingTickHandle);
 
   const stats = character.stats || {};
@@ -465,7 +504,7 @@ function renderCareerProfile(character, xpNeededForCurrentPoint, upgradeTiers) {
       : isMaxed
         ? `<span class="career-train-status career-train-maxed">Maxed</span>`
         : `<button type="button" class="career-train-btn" data-train="${key}">Workout</button>`;
-    const xpBar = isTraining ? xpBarHtml(character.training_started_at, xpNeededForCurrentPoint) : '';
+    const xpBar = isTraining ? xpBarHtml(character.training_started_at, xpNeededForCurrentPoint, xpBanked) : '';
 
     return `
       <div class="profile-stat-row career-stat-row${isTraining ? ' training' : ''}">
@@ -541,7 +580,7 @@ function renderCareerProfile(character, xpNeededForCurrentPoint, upgradeTiers) {
 
   if (character.training_stat) {
     trainingTickHandle = setInterval(() => {
-      const { xp, percent, ready } = xpProgress(character.training_started_at, xpNeededForCurrentPoint);
+      const { xp, percent, ready } = xpProgress(character.training_started_at, xpNeededForCurrentPoint, xpBanked);
       const fill = careerProfile.querySelector('[data-xp-fill]');
       const label = careerProfile.querySelector('[data-xp-label]');
       const wrap = careerProfile.querySelector('[data-xp-bar]');

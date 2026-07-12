@@ -24,7 +24,8 @@ module.exports = async function handler(req, res) {
     }
 
     const rows = await sql`
-      SELECT stats, training_stat, training_started_at, training_points, training_points_synced_at, speed_upgrade_tier
+      SELECT stats, training_stat, training_started_at, training_progress, training_points,
+             training_points_synced_at, speed_upgrade_tier
       FROM characters
       WHERE user_id = ${userId}
     `;
@@ -56,7 +57,8 @@ module.exports = async function handler(req, res) {
       stats: flushed.stats,
       trainingStat: stat,
       trainingStartedAt: now,
-      xpNeededForCurrentPoint: xpCostForPoint(flushed.stats[stat], flushed.speed_upgrade_tier || 0)
+      xpNeededForCurrentPoint: xpCostForPoint(flushed.stats[stat], flushed.speed_upgrade_tier || 0),
+      xpBanked: (flushed.training_progress && flushed.training_progress[stat]) || 0
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

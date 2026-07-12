@@ -16,7 +16,8 @@ module.exports = async function handler(req, res) {
     }
 
     const rows = await sql`
-      SELECT stats, training_stat, training_started_at, training_points, training_points_synced_at, speed_upgrade_tier
+      SELECT stats, training_stat, training_started_at, training_progress, training_points,
+             training_points_synced_at, speed_upgrade_tier
       FROM characters
       WHERE user_id = ${userId}
     `;

@@ -7,6 +7,7 @@ module.exports = async function handler(req, res) {
     await sql`ALTER TABLE characters ADD COLUMN IF NOT EXISTS training_points INTEGER NOT NULL DEFAULT 0`;
     await sql`ALTER TABLE characters ADD COLUMN IF NOT EXISTS training_points_synced_at TIMESTAMPTZ`;
     await sql`ALTER TABLE characters ADD COLUMN IF NOT EXISTS speed_upgrade_tier INTEGER NOT NULL DEFAULT 0`;
+    await sql`ALTER TABLE characters ADD COLUMN IF NOT EXISTS training_progress JSONB NOT NULL DEFAULT '{}'::jsonb`;
     res.status(200).json({ ok: true });
   } catch (error) {
     res.status(500).json({ error: error.message });

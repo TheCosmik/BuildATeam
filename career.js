@@ -417,6 +417,9 @@ function overallTier(overall) {
 }
 
 let trainingTickHandle = null;
+let spriteTickHandle = null;
+const BENCH_PRESS_FRAME_COUNT = 12;
+const BENCH_PRESS_FRAME_MS = 100;
 
 // xpBanked is whatever was already earned toward this point in a previous
 // session (switched away and back, or left and returned) - the live
@@ -550,6 +553,7 @@ function renderCareerProfile(character) {
 
 function renderGymPanel(character, xpNeededForCurrentPoint, xpBanked) {
   if (trainingTickHandle) clearInterval(trainingTickHandle);
+  if (spriteTickHandle) clearInterval(spriteTickHandle);
 
   const stats = character.stats || {};
 
@@ -580,7 +584,7 @@ function renderGymPanel(character, xpNeededForCurrentPoint, xpBanked) {
   const trainingVisual = trainingLabel
     ? `
       <div class="gym-training-visual">
-        <div class="bench-press-sprite"></div>
+        <img id="bench-press-sprite" class="bench-press-sprite" src="bench-press-frames/frame-01.png" alt="">
         <p class="gym-training-visual-label">Training ${trainingLabel}...</p>
       </div>
     `
@@ -604,6 +608,15 @@ function renderGymPanel(character, xpNeededForCurrentPoint, xpBanked) {
 
   const refreshBtn = document.getElementById('career-refresh-btn');
   if (refreshBtn) refreshBtn.addEventListener('click', () => loadCareer());
+
+  const spriteImg = document.getElementById('bench-press-sprite');
+  if (spriteImg) {
+    let frame = 1;
+    spriteTickHandle = setInterval(() => {
+      frame = (frame % BENCH_PRESS_FRAME_COUNT) + 1;
+      spriteImg.src = `bench-press-frames/frame-${String(frame).padStart(2, '0')}.png`;
+    }, BENCH_PRESS_FRAME_MS);
+  }
 
   if (character.training_stat) {
     trainingTickHandle = setInterval(() => {

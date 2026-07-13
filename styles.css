@@ -1757,29 +1757,10 @@ html, body {
 }
 
 .bench-press-sprite {
-  width: 168px;
-  height: 149px;
-  background-image: url('bench-press-sprite.png');
-  background-size: 400% 300%;
-  background-repeat: no-repeat;
+  width: 160px;
+  height: 168px;
+  object-fit: contain;
   filter: invert(1) drop-shadow(0 0 6px rgba(107, 226, 107, 0.35));
-  animation: benchPressSprite 1.2s steps(1) infinite;
-}
-
-@keyframes benchPressSprite {
-  0%      { background-position: 0% 0%; }
-  8.333%  { background-position: 33.333% 0%; }
-  16.667% { background-position: 66.667% 0%; }
-  25%     { background-position: 100% 0%; }
-  33.333% { background-position: 0% 50%; }
-  41.667% { background-position: 33.333% 50%; }
-  50%     { background-position: 66.667% 50%; }
-  58.333% { background-position: 100% 50%; }
-  66.667% { background-position: 0% 100%; }
-  75%     { background-position: 33.333% 100%; }
-  83.333% { background-position: 66.667% 100%; }
-  91.667% { background-position: 100% 100%; }
-  100%    { background-position: 0% 0%; }
 }
 
 .gym-training-visual-label {
